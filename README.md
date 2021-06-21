@@ -43,5 +43,5 @@ address those limitations as you begin to work more with this data.
 In order to answer the key business questions, I followed the steps of the data analysis process: ask, prepare, process, analyze, share, and act.
 
 **To stay on track throughout the case-study, I created a Scope-of-Work (SOW) document, outlining the milestones to be achieved for completion of project.**
-
+![](https://github.com/shubhammittl/google_data_analytics_capstone/blob/master/sow.png)
 
