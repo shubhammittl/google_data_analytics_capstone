@@ -10,9 +10,7 @@ This project is a case study titled, "How Can a Wellness Technology Company Play
 
 Welcome to the Bellabeat data analysis case study! In this case study, you will perform many real-world tasks of a junior data
 analyst. You will imagine you are working for Bellabeat, a high-tech manufacturer of health-focused products for women, and
-meet different characters and team members. In order to answer the key business questions, you will follow the steps of the
-data analysis process: ask, prepare, process, analyze, share, and act. Along the way, the Case Study Roadmap tables —
-including guiding questions and key tasks — will help you stay on the right path.
+meet different characters and team members. 
 
 ### Scenario
 
@@ -46,18 +44,4 @@ In order to answer the key business questions, I followed the steps of the data 
 
 **To stay on track throughout the case-study, I created a Scope-of-Work (SOW) document, outlining the milestones to be achieved for completion of project.**
 
-### ASK
-● What is the problem you are trying to solve?
-
-I am finding the key trends on how the consumers of non-Bellabeat products use their health-focused smart-devices.
-
-● How can your insights drive business decisions?
-
-The usage trends will help change the marketing strategy of Bellabeat smart-devices.
-
-Key Stakeholders: 
-Urška Sršen: Bellabeat’s cofounder and Chief Creative Officer
-Sando Mur: Mathematician and Bellabeat’s cofounder
-
-## 
 
