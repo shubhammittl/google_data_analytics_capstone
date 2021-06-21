@@ -44,7 +44,8 @@ kable(read_excel("datasets_used.xlsx"),
       caption = "Description of data sources used")
 ```
 *Note: In the remainder of the report, the data-sets are referred using the first name of their contributors*
-## Read dataset CSVs into data-frames
+
+### Read dataset CSVs into data-frames
 ```{r Read CSVs, message = FALSE}
 # import CSV data from all the datasets
 mobius_activity_orig <- read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\Fitbit_fitness_tracker_data\\dailyActivity_merged.csv")
@@ -755,7 +756,7 @@ activity %>%
   geom_text(aes(x=id, y = num_of_records,label=num_of_records, vjust = -.25), size = 3)+
   theme(legend.position = "none")
 
-ggsave("eda_activity.png")
+ggsave("saved_plots/eda_activity.png")
 ```
 The activity data is highly skewed in terms of number of daily records per individual.
 Consumer no. 4 has more than 1500 records while Consumer 40 has just 8 records.  
@@ -785,7 +786,7 @@ sleep %>%
   geom_text(aes(x=id, y = num_of_records,label=num_of_records, vjust = -.25), size = 3)+
   theme(legend.position = "none")
 
-ggsave("eda_sleep.jpeg")
+ggsave("saved_plots/eda_sleep.jpeg")
 ```
 
 Only 28 consumers have sleep records and the distribution of number of daily records is highly skewed, similar to the activity records.
@@ -812,7 +813,7 @@ heartrate %>%
   geom_text(aes(x=id, y = num_of_records,label=num_of_records, vjust = -.25), size = 3)+
   theme(legend.position = "none")
 
-ggsave("eda_heartrate.png")
+ggsave("saved_plots/eda_heartrate.png")
 ```
 The heartrate data is available for only 17 consumers. The distribution of number of daily records per consumer is skewed.
 
@@ -841,7 +842,7 @@ body %>%
   geom_text(aes(x=id, y = num_of_records,label=num_of_records, vjust = -.25), size = 3)+
   theme(legend.position = "none")
 
-ggsave("eda_body.png")
+ggsave("saved_plots/eda_body.png")
 ```
 
 The body-data is also highly skewed amongst 17 consumers.
@@ -897,7 +898,7 @@ activity %>%
 theme(legend.position = "none")
 ```
 ```{r, message = FALSE, warning = FALSE}
-ggsave("calories_vs_steps.png")
+ggsave("saved_plots/calories_vs_steps.png")
 ```
 
 **Finding:**
@@ -926,7 +927,7 @@ activity %>%
   geom_label(aes(x = 0.5* mean(calorie_per_step), y= 7.5, label = 'Average burners', size = 3))+
 theme(legend.position = "none")
 
-ggsave("distribute_calories_per_step.png")
+ggsave("saved_plots/distribute_calories_per_step.png")
 ```
 Since the distribution is bimodal, consumers can be segmented using the mean as shown.  
 Average burners burn less than 0.127 calorie/step, while Intense burners burn greater than 0.127 calorie/step.
@@ -948,7 +949,7 @@ activity %>%
   labs(title = "Calories-vs-Steps Trends for two consumer segments",
        x = 'Daily step count', y = 'Calories burnt')
 
-ggsave("calories_vs_steps_segments.png")
+ggsave("saved_plots/calories_vs_steps_segments.png")
 ```
 
 **Finding:**  
@@ -979,7 +980,7 @@ activity %>%
   labs(title = "Calories-vs-Steps trends for body-types",
        x = 'Daily step count', y = 'Calories burnt')
 
-ggsave("bodywise_calories_vs_steps.png")
+ggsave("saved_plots/bodywise_calories_vs_steps.png")
 ```
 
 **Finding:**
@@ -1054,7 +1055,7 @@ theme(legend.position = "none")
 
 grid.arrange(avg_cal_plot, avg_steps_plot, avg_dist_plot, ncol = 2)
 
-ggsave("distribute_avg_daily_activity.png")
+ggsave("saved_plots/distribute_avg_daily_activity.png")
 ```
 **Findings:**
 1. On an average, a consumer of smart-device covers a distance of 5 kilometers by walking 6925 steps and burns around 2.1 kilo-calories per day.  
@@ -1080,7 +1081,7 @@ labs(title = 'Trends of calories for consumers burning less than 500 calories as
     x = 'Date', y = 'Calories burnt')+
 theme(legend.position = "none")
 
-ggsave("less_cal_individual_trends.png")
+ggsave("saved_plots/less_cal_individual_trends.png")
 ```
 
 It is observed that Consumer-2 always had daily calories burnt under 250 calories with few days of zero-calories.  
@@ -1109,7 +1110,7 @@ activity %>%
             size = 3)+
 theme(legend.position = "none")
 
-ggsave("zero_cal.png")
+ggsave("saved_plots/zero_cal.png")
 ```
 
 12 out of 41 consumers under analyses had 2-35 % days of zero-calorie records.
@@ -1145,7 +1146,7 @@ activity %>%
              size = 3)+
 theme(legend.position = "none")
 
-ggsave("daywise_zero_cal.png")
+ggsave("saved_plots/daywise_zero_cal.png")
 ```
 
 The percentage of zero-calories readings are fairly constant (varies from `0.6` to `2.4 %`) across weekdays, indicating little to no-correlation between zero-calories reading and day.
@@ -1169,7 +1170,7 @@ activity %>%
                 label = paste0(round(percent_of_zero_steps),'%'), vjust = -0.25), size = 3)+
 theme(legend.position = "none")
 
-ggsave("zero_steps.png")
+ggsave("saved_plots/zero_steps.png")
 ```
 
 A consumer may have upto 75% of the days with zero-steps recorded.  
@@ -1192,7 +1193,7 @@ activity %>%
             size = 3)+
 theme(legend.position = "none")
 
-ggsave("zero_steps_distribution.png")
+ggsave("saved_plots/zero_steps_distribution.png")
 ```
 
 **Finding:**
@@ -1220,7 +1221,7 @@ activity %>%
              size = 3)+
 theme(legend.position = "none")
 
-ggsave("daywise_zero_steps.png")
+ggsave("saved_plots/daywise_zero_steps.png")
 ```
 
 **Findings:** 
@@ -1250,7 +1251,7 @@ avg_daily_activity %>%
        x = 'Average daily device usage (minutes)')+
 theme(legend.position = "none")
 
-ggsave("device_time_distribution.png")
+ggsave("saved_plots/device_time_distribution.png")
 ```
 
 The histogram depicts the bimodal distribution of device usage, where either the device is used around 1400 minutes frequently or around 1000 minutes.
@@ -1322,7 +1323,7 @@ theme(legend.position = "none")
 grid.arrange(avg_sedentary_min_plot, avg_light_active_min_plot,
              avg_fair_active_min_plot, avg_very_active_min_plot, nrow =2)
 
-ggsave("activity_time_distribution.png")
+ggsave("saved_plots/activity_time_distribution.png")
 ```
 
 **Finding:**
@@ -1359,7 +1360,7 @@ activity %>%
   geom_label(aes(label = round(daywise_sed_time)),size = 3)+
 theme(legend.position = "none")
 
-ggsave("daywise_sedentary.png")
+ggsave("saved_plots/daywise_sedentary.png")
 ```
 
 **Finding:**
@@ -1397,7 +1398,7 @@ ggplot(activity_by_weekday,
   geom_label(aes(label = round(avg_steps_by_day,0)))+
 theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
 
-ggsave("daywise_step_count.png")
+ggsave("saved_plots/daywise_step_count.png")
 ```
 
 #### Average Light-Active minutes vs Day {-} 
@@ -1413,7 +1414,7 @@ ggplot(activity_by_weekday,
   geom_label(aes(label = round(light_min,1)))+
 theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
 
-ggsave("daywise_light_activity.png")
+ggsave("saved_plots/daywise_light_activity.png")
 ```
 
 #### Average Very-Active minutes vs Day {-} 
@@ -1429,7 +1430,7 @@ ggplot(activity_by_weekday,
   geom_label(aes(label = round(moderate_min,1)))+
 theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
 
-ggsave("daywise_moderate_activity.png")
+ggsave("saved_plots/daywise_moderate_activity.png")
 ```
 
 #### Average Very-Active minutes vs Day {-} 
@@ -1448,7 +1449,7 @@ theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1
 #grid.arrange(steps_vs_day_plot, light_activity_plot, moderate_activity_plot,
 #             intense_activity_plot,nrow = 2)
 
-ggsave("daywise_intense_activity.png")
+ggsave("saved_plots/daywise_intense_activity.png")
 ```
 
 **Finding:** 
@@ -1485,7 +1486,7 @@ ggplot(sleep_data_availability) +
             size = 3)+
 theme(legend.position = "none")
 
-ggsave("sleep_availability.png")
+ggsave("saved_plots/sleep_availability.png")
 ```
 
 **Finding:**
@@ -1513,7 +1514,7 @@ sleep %>%
             label=paste("Mean =",round(mean(avg_sleep_time))) ), size = 3)+
 theme(legend.position = "none")
 
-ggsave("sleep_time_distribution.png")
+ggsave("saved_plots/sleep_time_distribution.png")
 ```
 
 **Findings:** 
@@ -1552,7 +1553,7 @@ labs(title = 'Individual trends of consumers with less than 240 min average dail
     y = 'Sleep time in minutes')+
 theme(legend.position = "none")
 
-ggsave("less_sleepy_consumers.png")
+ggsave("saved_plots/less_sleepy_consumers.png")
 ```
 
 **Finding:**
@@ -1592,7 +1593,7 @@ sleep %>%
        x = '', y = 'Average sleep-time (minutes)')+
 theme(legend.position = "none")
 
-ggsave("daywise_sleep.png")
+ggsave("saved_plots/daywise_sleep.png")
 ```
 
 **Finding:**
@@ -1623,7 +1624,7 @@ sleep %>%
             label=paste("Mean =",round(mean(avg_wake_time)))), size = 3) +
 theme(legend.position = "none")
 
-ggsave("wake_time_distribution.png")
+ggsave("saved_plots/wake_time_distribution.png")
 ```
 
 **Finding:**
@@ -1653,7 +1654,7 @@ sleep %>%
             label=paste("Mean = ",round(mean(wake_time_percent)))), size = 3)+
 theme(legend.position = "none")
 
-ggsave("bed_time_wasted.png")
+ggsave("saved_plots/bed_time_wasted.png")
 ```
 
 **Finding:**  
@@ -1721,7 +1722,7 @@ geom_label(aes(x=mean(hr_by_activity_percent), y= 0.05,
         label=paste("Mean =",round(mean(hr_by_activity_percent)))), size = 3)+
 theme(legend.position = "none")
 
-ggsave("hr_availability.png")
+ggsave("saved_plots/hr_availability.png")
 ```
 
 **Finding:**
@@ -1748,7 +1749,7 @@ hourly_hr_availability %>%
             label=paste("Mean =", round(mean(avg_hours_count)))), size = 3)+
 theme(legend.position = "none")
 
-ggsave("hr_comprehensiveness.png")
+ggsave("saved_plots/hr_comprehensiveness.png")
 ```
 
 **Finding:**
@@ -1775,7 +1776,7 @@ labs(title = 'Is daily calories burnt related to daily heartrate ?',
     y = 'Calories burnt', x = 'Average daily heartrate')+
 theme(legend.position = "none")
 
-ggsave("cal_vs_hr.png")
+ggsave("saved_plots/cal_vs_hr.png")
 ```
 
 **Finding:**
@@ -1814,7 +1815,7 @@ geom_label(aes(x=mean(body_by_activity_percent), y= 0.05,
         label=paste("Mean =",round(mean(body_by_activity_percent)))), size = 3)+
 theme(legend.position = "none")
 
-ggsave("body_data_availability.png")
+ggsave("saved_plots/body_data_availability.png")
 ```
 
 **Finding:**
@@ -1917,18 +1918,4 @@ Sršen tells you that this data set might have some limitations, and encourages 
 address those limitations as you begin to work more with this data.
 
 
-
-## Additional plots generated
-
-```{r, message = FALSE, warning = FALSE}
-num_of_consumers <- c(41,28,17,17)
- data_frame <- c("activity", "sleep", "heartrate", "body")
-df <- data.frame(num_of_consumers,data_frame)
-ggplot(df, aes(x = data_frame, y = num_of_consumers, fill = data_frame)) + geom_col() + 
-labs(x = 'Data', y = 'Number of participants', title = 'Number of consumers under analysis')+
-  geom_text(aes(label=num_of_consumers, vjust = -.25), size = 3)+
-theme(legend.position = "none")
-
-ggsave("num_of_consumers.png")
-```
 
