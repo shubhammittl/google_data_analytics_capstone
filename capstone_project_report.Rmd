@@ -1,0 +1,1934 @@
+---
+title: "Google Data Analytics Capstone Project Report"
+author: "Shubham Mittal"
+date: "18/06/2021"
+output: 
+  html_document:
+    number_sections: TRUE
+    toc: TRUE
+    toc_depth: 2
+    toc_float: true
+    fig_height: 5
+    fig_width: 7
+    code_folding: hide
+---
+This report is based on Case-study: **How Can a Wellness Technology
+Company Play It Smart?**. Please refer to Appendix for details.
+
+# Business task
+The goal of this project is to improve marketing strategy of Bellabeat’s wellness tracker - Leaf Chakra. This project will analyze the usage data of non-Bellabeat trackers’ consumers to find key patterns and relationships.  The key insights drawn from the analysis will be applied to Leaf Chakra for its promotion. The final deliverable will be high-level marketing recommendations based on those key insights. 
+
+
+# Data Preparation
+
+```{r Include Packages, message=FALSE}
+library(plyr)
+library(tidyverse)
+library(skimr)
+library(ggplot2)
+library(janitor)
+library(lubridate)
+library(gridExtra)
+library(rmarkdown)
+library(readxl)
+library(knitr)
+```
+
+## Data Sources
+
+In addition to FitBit Fitness Tracker Data contributed by Mobius on Kaggle, 7 
+more data sets were collected for better analysis, as described next.
+
+```{r message=FALSE, warning=FALSE, results = 'asis'}
+kable(read_excel("datasets_used.xlsx"),
+      caption = "Description of data sources used")
+```
+*Note: In the remainder of the report, the data-sets are referred using the first name of their contributors*
+## Read dataset CSVs into data-frames
+```{r Read CSVs, message = FALSE}
+# import CSV data from all the datasets
+mobius_activity_orig <- read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\Fitbit_fitness_tracker_data\\dailyActivity_merged.csv")
+mobius_heartrate_orig <- read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\Fitbit_fitness_tracker_data\\heartrate_seconds_merged.csv")
+mobius_sleep_orig <- read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\Fitbit_fitness_tracker_data\\sleepDay_merged.csv")
+mobius_body_orig <- read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\Fitbit_fitness_tracker_data\\weightLogInfo_merged.csv")
+akash_data <- read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\fitbit_akash\\FitBit data.csv")
+alket_activity_orig <- read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\Fitbit_charge_hr_data\\One_Year_of_FitBitChargeHR_Data.csv")
+arooj_data <-  read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\Fitness_trends_dataset\\25.csv")
+
+josh_data <- read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\josh_fitbit_data\\time_Values.csv")
+
+damir_body_orig <-read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\Mi_band_4_years_data\\Body.csv")
+damir_sleep_orig <- read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\Mi_band_4_years_data\\Sleep.csv")
+damir_activity_orig <- read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\Mi_band_4_years_data\\Steps.csv")
+
+
+parul_activity_orig <- read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\parul_fitbit_data\\ACTIVITY\\ACTIVITY_1599810432505.csv")
+parul_sleep_orig <- read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\parul_fitbit_data\\SLEEP\\SLEEP_1599810433552.csv")
+parul_heartrate_orig <-  read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\parul_fitbit_data\\HEARTRATE_AUTO\\HEARTRATE_AUTO_1599810433761.csv")
+
+bekbolat_activity_orig <- read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\Xiaomi_mi_tracker_data\\ACTIVITY\\ACTIVITY_1566153601293.csv")
+bekbolat_sleep_orig <-  read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\Xiaomi_mi_tracker_data\\SLEEP\\SLEEP_1566153602529.csv")
+bekbolat_heartrate_orig <- read_csv("C:\\Users\\shubh\\Documents\\GDAC\\Course 8\\Xiaomi_mi_tracker_data\\HEARTRATE_AUTO\\HEARTRATE_AUTO_1566153602880.csv")
+
+```
+
+## Data Checkup
+
+Note: The focus of checkup was primarily on the daily activity, sleep & hear-rate data.  
+Following is the data-check summary.
+
+```{r message=FALSE, warning=FALSE, results = 'asis'}
+kable(read_excel("data_checkup.xlsx"),
+      caption = "Summary of Data checkup")
+```
+None of the datasets proved to be *good* datasets during checkup. 
+Nevertheless, we should move on to exciting analysis ahead.
+
+# Data Processing
+
+Summary:  
+
+1. Inspect each dataframe for missing values.  
+2. Standardize the column names.  
+3. Remove erroneous outliers.  
+4. Convert data values into consistent metrics.  
+5. Merge & split columns as required  
+6. Fix typos  
+7. Sort records  
+8. Remove machine-dependent/ irrelevant columns  
+
+```{r, message = FALSE, warning = FALSE}
+# list of ids alloted to individuals within datasets
+alket_id <- 1
+arooj_id <- 2
+josh_id <- 3
+damir_id <- 4
+parul_id <- 5
+bekbolat_id <- 6
+```
+
+Let's process data-frames of each dataset one by one.
+
+## Process Mobius dataset
+
+### Activity
+
+```{r message=FALSE, include=FALSE, results='hide'}
+head(mobius_activity_orig)
+skim_without_charts(mobius_activity_orig)
+
+mobius_activity <- mobius_activity_orig %>% 
+  clean_names() %>%  # snake-case column names 
+  distinct() %>%    # removes any duplicate rows
+  mutate(activity_date = as.Date(activity_date,"%m/%d/%Y")) %>% # convert into date-format
+  rename(date = activity_date, steps = total_steps, distance = total_distance) %>% 
+  select(-c(tracker_distance, logged_activities_distance)) %>% # remove columns irrelevant to analysis
+  arrange(id,date) # sort by id, then date
+
+skim_without_charts(mobius_activity)
+
+```
+
+**Changelog**  
+
+1.  Snake-cased the column names
+2.  Removed 0 duplicate records
+3.	Renamed `activity_date` to `date` and converted into date type.  
+4.	Renamed columns: `total_steps` to `steps`, `total_distance` to `distance`  
+5.	Removed `tracker_distance`, `logged_activities_distance` columns   
+6.	Sorted by `id`, then by `date` 
+
+
+### Heartrate
+```{r message=FALSE, warning=FALSE, results = 'hide' }
+head(mobius_heartrate_orig)
+skim_without_charts(mobius_heartrate_orig)
+
+mobius_heartrate <- mobius_heartrate_orig %>% 
+  clean_names() %>% 
+  distinct() %>%  
+  mutate(time = parse_date_time(time, "%m/%d/%Y %I:%M:%S %p")) %>% #convert date-time into standard 24-hour format
+  separate(col = time, into = c("date", "time"), sep = " ") %>% # split date-time into date & time columns
+  rename(heart_rate = value) %>% 
+  mutate(date = as.Date(date),
+         time = format(strptime(time, "%H:%M:%S"), "%H:%M")) %>% # preserve hour-minute data only
+  group_by(id, date, time) %>% 
+  summarize(heart_rate = mean(heart_rate)) %>% 
+  arrange(id, date, time) 
+
+head(mobius_heartrate)
+
+```
+
+**Changelog**  
+
+1.	Snake-cased the column names
+2.	0 duplicate rows removed
+3.	Converted `date_time` into 24-hours date_time format
+4.	Split `date_time` into `date` and `time`
+5.	Removed seconds information from `time` column
+6.	Sorted by `id` , then `date`, then `time`
+7.	Renamed columns: `value` to `heart_rate`
+8.	Modified `heart_rate` = average(heart_rate) per minute
+
+### Sleep
+```{r message=FALSE, warning=FALSE, results = 'hide' }
+head(mobius_sleep_orig)
+skim_without_charts(mobius_sleep_orig)
+
+mobius_sleep <- mobius_sleep_orig %>% 
+  clean_names() %>% 
+  distinct() %>% 
+  mutate(sleep_day = as.Date(sleep_day,"%m/%d/%Y")) %>% # converts into date-type
+  rename(date = sleep_day, sleep_time = total_minutes_asleep, bed_time = total_time_in_bed) %>% 
+  select(-total_sleep_records) %>% 
+  mutate(wake_time =bed_time - sleep_time) %>% 
+  arrange(id,date)
+
+skim_without_charts(mobius_sleep)
+```
+
+**Changelog**  
+
+
+1.	Snake_cased column names
+2.	3 duplicate rows removed
+3.	Converted `sleep_day` entries into date format
+4.	Renamed columns: `sleep_day` into `date`, `total_minutes_sleep` to `sleep time`, `total_time_in_bed` to `bed_time`.
+5.	Computed `wake_time` = `bed_time` – `sleep_time`
+6.	Deleted column: `total_sleep_records`
+7.	Sorted by `id`, then `date`
+
+### Body
+
+```{r message=FALSE, warning=FALSE, results = 'hide' }
+head(mobius_body_orig)
+skim_without_charts(mobius_body_orig)
+mobius_body <- mobius_body_orig %>% 
+  clean_names() %>% 
+  distinct() %>% 
+  rename(weight = weight_kg) %>%
+  mutate(date = as.Date(date, "%m/%d/%Y"), height = sqrt(weight/bmi)* 100) %>% 
+  arrange(id,date) %>% 
+  select(-c(log_id, weight_pounds))
+
+skim_without_charts(mobius_body)
+```
+
+**Changelog**  
+
+
+1.	Snake_cased column names
+2.	0 duplicates removed
+3.	Preserved date component in the `date` column, removed time
+4.	Removed columns: `log_id`, `weight_in_pounds`
+5.	Computed `height` from `bmi` and `weight`
+6.	Sorted by `id`, then `date`
+
+
+## Process Akash dataset
+
+```{r message=FALSE, warning=FALSE, results='hide'}
+head(akash_data)
+skim_without_charts(akash_data)
+
+akash_activity <- akash_data%>% 
+  clean_names() %>% 
+  distinct() %>% 
+  mutate(activity_date = as.Date(activity_date,"%m/%d/%Y")) %>% 
+  rename(date = activity_date, steps = total_steps, distance = total_distance) %>% 
+  select(-c(tracker_distance, logged_activities_distance)) %>% 
+  arrange(id,date) #sort by id, then by activity_date
+
+skim_without_charts(akash_activity)
+```
+
+**Changelog**  
+
+
+1.	Snake_cased column names
+2.	0 duplicates removed
+3.	Converted `activity_date` into date format and renamed to `date`
+4.	Removed `tracker_distance` column
+5.	Renamed columns: `total_steps` to `steps`, `total_distance` to `distance`
+6.	Sorted by `id`, then `date`
+
+
+## Process Alket dataset
+```{r, message = FALSE, warning = FALSE, results='hide'}
+head(alket_activity_orig)
+skim_without_charts(alket_activity_orig)
+
+alket_activity <- alket_activity_orig %>% 
+  distinct() %>% # remove 1 duplicate row
+  clean_names() %>% 
+  mutate(date = as.Date(date, "%d-%m-%Y"), 
+         calories = calories * 1000,  # convert kilocalories into calories
+         steps = case_when(
+    steps < 100 ~ steps*1000,
+    steps >= 100 ~ steps), 
+         minutes_sitting = case_when(
+    minutes_sitting < 10 ~ minutes_sitting * 1000,
+    minutes_sitting >= 10 ~ minutes_sitting),
+         distance = as.numeric(gsub(",", ".", distance)),# replace comma with decimal
+         id = alket_id) %>%
+  filter(date != '2016-01-24' ) %>%  # filter out erroneous outlier
+  rename(sedentary_minutes = minutes_sitting, 
+         lightly_active_minutes = minutes_of_slow_activity,
+         fairly_active_minutes = minutes_of_moderate_activity,
+         very_active_minutes = minutes_of_intense_activity) %>% 
+  select(-c(floors,calories_activity)) %>%  
+  arrange(date)
+
+head(alket_activity)
+
+```
+
+**Changelog**  
+
+
+1.	Snake-cased column names
+2.	1 duplicate row removed
+3.	Converted `date column` to date format
+4.	Converted `calories` from kilo-calories to calories
+5.	Modified `calories_activity` column : multiplied by 1000 if less than 5
+6.	Modified `steps` column: multiply by 1000 if less than 100
+7.	Modified `distance` column: replaced comma with dot to make it numeric value
+8.	Modified `minutes_sitting`: multiplied by 1000 if less than 10
+9.	Removed record with `date`= '24-01-2016', as it is erroneous outlier.
+10.	Inserted `id` as new column
+11.	Removed columns: `floors', `calories_activity`
+12.	Renamed columns: `sedentary`, `lightly_active`, `fairly_active`, `very_active_minutes`.
+13.	Sorted by `id`, then `date`
+
+
+## Process Arooj dataset
+```{r, message = FALSE, warning = FALSE, results='hide'}
+head(arooj_data)
+skim_without_charts(arooj_data)
+
+arooj_activity <- arooj_data %>% 
+  clean_names() %>% 
+  distinct() %>% 
+  rename(steps = step_count, calories = calories_burned,
+         sleep_time = hours_of_sleep, weight = weight_kg) %>% 
+  mutate(date = as.Date(date, "%Y-%m-%d"),
+        id = arooj_id, sleep_time = sleep_time * 60) %>% # insert artificial ID to recognize the person) %>%
+  select(-c(mood,bool_of_active)) %>%  # drop irrelevant columns
+  arrange(id, date)
+
+arooj_sleep <- arooj_activity %>% select( c(id, date, sleep_time))
+arooj_body <- arooj_activity %>% select( c(id, date, weight)) 
+arooj_activity <- arooj_activity %>% select(c(id, date, steps, calories))
+
+skim_without_charts(arooj_sleep)
+
+skim_without_charts(arooj_body)
+
+skim_without_charts(arooj_activity)
+```
+
+**Changelog**  
+
+
+1.	Snake-cased column names
+2.	0 duplicates found
+3.	Formatted `date` column into date type
+4.	Renamed `step_count` to `steps`, `calories_burned` to `calories`
+5.	Removed columns: `mood`, `bool_of_active`
+6.	Inserted a new column `id`
+7.	Sorted by `id`, then `date`
+8.	Converted  `sleep_time` from hours to minutes
+
+
+## Process Josh dataset
+
+### Activity
+
+```{r message=FALSE, warning=FALSE, results = 'hide' }
+head(josh_data)
+skim_without_charts(josh_data)
+
+# Josh's data has missing values for `hr` column, i.e., heartbeat values. Also, `gsr` and `temp` are also missing. Those columns are irrelevant to our analysis.
+
+josh_activity <- josh_data %>% 
+  clean_names() %>% 
+  distinct() %>% 
+  separate( col = date_time, into = c("date", "time"), sep = " ") %>% 
+  mutate(date = as.Date(date))%>%
+  select(date, time, steps, calories ) %>% 
+  group_by(date) %>% 
+  summarize(id = josh_id,steps = sum(steps), calories = sum(calories)) %>% 
+  arrange(date)
+
+head(josh_activity)
+skim_without_charts(josh_activity)
+```
+
+**Changelog**  
+
+
+1.	Snake-cased column names
+2.	0 duplicates found
+3.	Summed the `calories` and `steps` day-wise 
+4.	Inserted person `id` as new column
+
+### Heart-rate
+```{r, message = FALSE, warning = FALSE, results='hide'}
+josh_heartrate <- josh_data %>% 
+  clean_names() %>% 
+  distinct() %>% 
+  separate( col = date_time, into = c("date", "time"), sep = " ") %>% 
+  mutate(id = josh_id,
+      time = substr(time,1,5),
+        date = as.Date(date)) %>% #preserve only hour-minute data
+  rename(heart_rate = hr) %>% 
+  select(id, date, time, heart_rate) %>% 
+  drop_na() %>% # drop rows with missing heart-rate data
+  arrange(date,time)
+
+skim_without_charts(josh_heartrate)
+
+```
+
+**Changelog**  
+
+1.	Snake-cased column names
+2.	0 duplicates found
+3.	Removed 3499 rows with missing values
+4.	Split `date_time` column into `date` and `time` columns
+5.	Renamed column: `hr` to `heart_rate`
+6.	Inserted person `id`
+7.	Sorted by `date`, `time`
+
+## Process Damir dataset
+
+### Activity
+
+```{r message=FALSE, warning=FALSE, results = 'hide' }
+head(damir_activity_orig)
+skim_without_charts(damir_activity_orig)
+
+damir_activity <- damir_activity_orig %>% 
+  clean_names() %>% 
+  distinct() %>% 
+  filter(last_sync_time!=0) %>% # remove days with zero lastSycnTime 
+  mutate(id = damir_id,
+         date = as.Date(date, "%Y-%m-%d"),
+         distance = distance/1000, # Convert distance from m to km
+         very_active_distance = run_distance/1000) %>% # Convert run_distance from m to km
+  select(-c(last_sync_time, run_distance)) %>% 
+  arrange(date)
+
+skim_without_charts(damir_activity)
+```
+
+**Changelog**  
+
+
+1.	Snake-cased column names
+2.	Removed 29 rows with missing readings
+3.	Converted `date` column to date type
+4.	Converted `distance` and `run_distance` from meters to kilometers
+5.	Removed columns: `last_sync_time`
+6.	Inserted person `id`
+7.	Sorted by `date`
+
+### Sleep
+```{r message=FALSE, warning=FALSE, results = 'hide' }
+head(damir_sleep_orig)
+skim_without_charts(damir_sleep_orig)
+
+damir_sleep <- damir_sleep_orig %>% 
+  clean_names() %>% 
+  distinct() %>% 
+  filter(last_sync_time!=0) %>% # Remove days with missing data 
+  mutate( id = damir_id,
+          date = as.Date(date, "%Y-%m-%d"),
+         sleep_time = deep_sleep_time + shallow_sleep_time,
+         bed_time = wake_time + deep_sleep_time + shallow_sleep_time) %>% 
+  select(c(id, date, deep_sleep_time, shallow_sleep_time, wake_time, bed_time, 
+           sleep_time)) %>% # Delete irrelevant columns
+  arrange(date)
+
+skim_without_charts(damir_sleep)
+```
+
+**Changelog**  
+
+
+1.	Snake-cased column names
+2.	Removed 29 rows with missing readings
+3.	Converted `date` column to date type
+4.	Removed columns: `last_sync_time`, `start`, `stop`
+5.	Inserted person `id` as new column
+6.	Sorted by `date`
+
+### Body
+
+```{r, message = FALSE, warning = FALSE, results='hide'}
+head(damir_body_orig)
+skim_without_charts(damir_body_orig)
+
+damir_body <- damir_body_orig %>% 
+  clean_names() %>% 
+  distinct() %>% 
+  mutate(date = as.Date(substr((as.POSIXct(timestamp, origin = "1970-01-01")),1,10)),# Convert timestamp to date
+         id = damir_id)%>% 
+  select(c(id, date, height, weight, bmi)) %>% 
+  arrange(date)
+
+skim_without_charts(damir_body)
+```
+
+**Changelog**  
+
+
+1.	Snaked-cased column names
+2.	0 duplicates found
+3.	Converted timestamp to date
+4.	Preserved `height`, `weight` and `bmi` columns only
+5.	Sorted by `date`
+6.  Added `id` column
+
+
+## Process Parul dataset
+
+### Activity
+```{r, message = FALSE, warning = FALSE, results='hide'}
+head(parul_activity_orig)
+skim_without_charts(parul_activity_orig)
+
+parul_activity <- parul_activity_orig %>% 
+  clean_names() %>% 
+  distinct() %>% 
+  mutate(id = parul_id,
+         date = as.Date(date, "%Y-%m-%d"),
+         distance = distance/1000, # Convert distance : m to km
+         very_active_distance = run_distance/1000) %>% # Convert run_distance: m to km
+  select(-c(last_sync_time, run_distance)) %>% 
+  arrange(date) # sort by date
+
+skim_without_charts(parul_activity)
+
+```
+
+
+**Changelog**  
+
+
+1.	Snake-cased column names
+2.	Removed 269 duplicate rows
+3.	Convert `date` column to date-type
+4.	Removed `last_sync_time` column
+5.	Converted `distance` from meter to kilometers
+6.	Inserted person `id`
+7.	Sorted by `date`
+
+### Heart-rate
+```{r message=FALSE, warning=FALSE, results = 'hide' }
+head(parul_heartrate_orig)
+skim_without_charts(parul_heartrate_orig)
+
+parul_heartrate <- parul_heartrate_orig %>% 
+  clean_names() %>% 
+  distinct() %>% 
+  mutate(id = parul_id,
+         date = as.Date(date, "%Y-%m-%d"),
+         time = substr(time,1,5)) %>% 
+  arrange(date,time)
+
+skim_without_charts(parul_heartrate)
+```
+
+
+**Changelog**  
+
+
+1.	Snake-cased column names
+2.	0 duplicate rows found
+3.	Converted `date` column to date type
+4.	Inserted person `id` 
+5.	Removed seconds info from `time` column
+6.	Sorted by `date`, then `time`
+
+### Sleep
+
+```{r message=FALSE, warning=FALSE, results = 'hide' }
+head(parul_sleep_orig)
+skim_without_charts(parul_sleep_orig)
+
+parul_sleep <- parul_sleep_orig %>% 
+  distinct() %>% 
+  clean_names() %>% 
+  mutate(id = parul_id,
+         date = as.Date(date, "%Y-%m-%d"),
+         sleep_time = deep_sleep_time + shallow_sleep_time,
+         bed_time = deep_sleep_time + shallow_sleep_time + wake_time) %>%
+  select(c(id, date, deep_sleep_time, shallow_sleep_time, 
+           sleep_time, wake_time, bed_time)) %>% 
+  arrange(date)
+
+skim_without_charts(parul_sleep)
+```
+
+**Changelog**  
+
+1.	Snake-cased column names
+2.	269 duplicate rows removed
+3.	Converted `date` column into date type
+4.	Removed columns: `last_sync_time`, `start`, `stop`
+5.	Created columns: `bed_time` and `sleep_time` out of `deep` and `shallow` sleep times.
+6.	Inserted person `id` 
+7.	Sorted by `date`
+
+
+## Process Bekbolat dataset
+
+### Activity
+```{r message=FALSE, warning=FALSE, results = 'hide' }
+head(bekbolat_activity_orig)
+skim_without_charts(bekbolat_activity_orig)
+
+bekbolat_activity <- bekbolat_activity_orig %>% 
+  clean_names() %>% 
+  distinct() %>% 
+  mutate(id = bekbolat_id,
+         date = as.Date(date, "%Y-%m-%d"), 
+         distance = distance/1000, very_active_distance = run_distance/1000)%>%  
+  select(c(id, date,distance, very_active_distance, steps, calories)) %>% 
+  arrange(date)
+
+skim_without_charts(bekbolat_activity)
+```
+
+**Changelog**  
+
+1.	Snake-cased column names
+2.	385 duplicate rows removed
+3.	Converted `date` column into date type
+4.	Converted `distance` from meters into kilometers
+5.	Removed columns: `last_sync_time`
+6.	Insert person `id` 
+7.	Sort by `date`
+
+
+### Heart-rate
+```{r message=FALSE, warning=FALSE, results = 'hide' }
+head(bekbolat_heartrate_orig)
+skim_without_charts(bekbolat_heartrate_orig)
+
+bekbolat_heartrate <- bekbolat_heartrate_orig %>% 
+  clean_names() %>% 
+  distinct() %>% 
+  mutate(date = as.Date(date, "%Y-%m-%d"),
+         id = bekbolat_id,
+         time = substr(time,1,5)) %>% 
+  select(c(id, date, time, heart_rate)) %>% 
+  arrange(date,time)
+
+skim_without_charts(bekbolat_heartrate)
+```
+
+**Changelog**  
+
+1.	Snake-cased column names
+2.	0 duplicate rows found
+3.	Converted `date` column into date type
+4.	Remove seconds info from `time` column
+5.	Insert person `id` 
+6.	Sort by `date`, then `time`.
+
+
+### Sleep
+
+```{r, message = FALSE, warning = FALSE, results = 'hide'}
+head(bekbolat_sleep_orig)
+skim_without_charts(bekbolat_sleep_orig)
+
+bekbolat_sleep <- bekbolat_sleep_orig %>% 
+  clean_names() %>% 
+  distinct() %>% 
+  mutate(date = as.Date(date, "%Y-%m-%d"),
+         sleep_time = deep_sleep_time + shallow_sleep_time,
+         bed_time = deep_sleep_time + shallow_sleep_time + wake_time,
+         id = bekbolat_id) %>% 
+  select(c(id, date, deep_sleep_time, shallow_sleep_time,
+           sleep_time, bed_time, wake_time)) %>%
+  arrange(date)
+
+skim_without_charts(bekbolat_sleep)
+
+```
+
+**Changelog**  
+
+
+1.	Snake-cased column names
+2.	385 duplicate rows removed
+3.	Converted `date` column into date type
+4.	Removed columns: `last_sync_time`, `start` , `stop`
+5.	Created columns: `bed_time`, `sleep_time` out of `shallow` and `deep` sleep
+6.	Inserted person `id`
+7.	Sorted by date
+
+# Data Analysis
+
+## Aggregate dataframes
+
+### Bind records of all consumers
+
+Let's bind all the consumer records into 4 data-frames:
+
+1. activity
+2. sleep
+3. heartrate
+4. body
+
+```{r, message = FALSE, warning = FALSE}
+activity <- bind_rows(mobius_activity,akash_activity,alket_activity,arooj_activity,
+                      josh_activity, damir_activity,parul_activity,
+                     bekbolat_activity, .id = 'dataset_num')
+
+sleep <- bind_rows(mobius_sleep, arooj_sleep,
+                   damir_sleep,parul_sleep,
+                     bekbolat_sleep, .id = 'dataset_num')
+
+heartrate <- bind_rows(mobius_heartrate,
+                       josh_heartrate,parul_heartrate,
+                     bekbolat_heartrate, .id = 'dataset_num')
+
+body <- bind_rows(mobius_body, arooj_body, damir_body,
+                  .id = 'dataset_num')
+```
+
+### Assign unique IDs to consumers
+
+```{r, message = FALSE, warning = FALSE}
+paste("Total number of unique IDs in Activity data =",n_unique(activity$id))
+unique(activity$id)
+
+longer_ids <- unique(activity$id)[-c(36:41)]
+```
+Most of the consumer ID's are 10-digit numbers. Let's shorten these ID's.
+
+```{r, message = FALSE, warning = FALSE}
+dfs = list(activity, heartrate, sleep, body)
+for (i in 1:length(dfs)) {
+  dfs[[i]] <- dfs[[i]] %>%
+  mutate(id = plyr::mapvalues(id, from = longer_ids, to = c(7:41),
+                        warn_missing = FALSE)) %>%
+  mutate(id = as.character(id)) %>%
+  select(-c(dataset_num)) %>%
+  arrange(id,date)
+}
+activity <- dfs[[1]]
+heartrate <- dfs[[2]]
+sleep <- dfs[[3]]
+body <-dfs[[4]]
+```
+
+## Exploratory Data Analysis {.tabset}
+
+### Activity Data {-}
+```{r, message = FALSE, warning = FALSE}
+paste('Total number of consumers having activity-log:',n_unique(activity$id))
+print('Columns in the activity data:') 
+colnames(activity)
+skim_without_charts(activity)
+```
+The activity data is complete in terms of `steps` and `calories` columns, while other columns do have missing values.  
+These missing values will be dealt according to the use case in further analyses.
+
+#### Distribution of daily activity records amongst consumers
+```{r, message = FALSE, warning = FALSE}
+options(repr.plot.width = 15,repr.plot.height = 9)
+activity %>% 
+  group_by(id) %>%
+  summarize( num_of_records = n()) %>% 
+  ggplot(aes(x=id, y = num_of_records, fill =id))+ 
+  geom_col()+
+  labs(title = 'How much daily activity data we have per consumer?',
+       subtitle = "Number of daily activity records by consumer",
+       x = 'Consumer ID',
+       y = 'Number of records')+
+  geom_text(aes(x=id, y = num_of_records,label=num_of_records, vjust = -.25), size = 3)+
+  theme(legend.position = "none")
+
+ggsave("eda_activity.png")
+```
+The activity data is highly skewed in terms of number of daily records per individual.
+Consumer no. 4 has more than 1500 records while Consumer 40 has just 8 records.  
+
+### Sleep data {-}
+```{r, message = FALSE, warning = FALSE}
+paste('Total number of consumers having sleep-log:',n_unique(sleep$id))
+print('Columns in sleep data:')
+colnames(sleep)
+skim_without_charts(sleep)
+```
+
+The sleep data is complete in terms of `sleep_time`. However, other columns do have missing values.  
+
+#### Distribution of daily sleep records amongst consumers
+
+```{r, message = FALSE, warning = FALSE}
+sleep %>% 
+  group_by(id) %>%
+  summarize( num_of_records = n()) %>% 
+  ggplot(aes(x=id, y = num_of_records, fill =id))+ 
+  geom_col()+
+  labs(title = 'How much daily sleep data we have per consumer?',
+       subtitle = "Number of daily sleep records by consumer",
+       x = 'Consumer ID',
+       y = 'Number of records')+
+  geom_text(aes(x=id, y = num_of_records,label=num_of_records, vjust = -.25), size = 3)+
+  theme(legend.position = "none")
+
+ggsave("eda_sleep.jpeg")
+```
+
+Only 28 consumers have sleep records and the distribution of number of daily records is highly skewed, similar to the activity records.
+
+### Heart-rate data {-}
+```{r, message = FALSE, warning = FALSE}
+paste('Total number of consumers having heartrate-log:',n_unique(heartrate$id))
+print('Columns in heartrate data:')
+colnames(heartrate)
+head(heartrate)
+```
+
+#### Distribution of daily pulse-rate records amongst consumers
+```{r, message = FALSE, warning = FALSE}
+heartrate %>% 
+  group_by(id) %>%
+  summarize( num_of_records = n_unique(date)) %>% 
+  ggplot(aes(x=id, y = num_of_records, fill =id))+ 
+  geom_col()+
+  labs(title = 'How much daily heart-rate data we have per consumer?',
+       subtitle = "Number of daily heart-rate records by consumer",
+       x = 'Consumer ID',
+       y = 'Number of records')+
+  geom_text(aes(x=id, y = num_of_records,label=num_of_records, vjust = -.25), size = 3)+
+  theme(legend.position = "none")
+
+ggsave("eda_heartrate.png")
+```
+The heartrate data is available for only 17 consumers. The distribution of number of daily records per consumer is skewed.
+
+### Body data {-}
+
+```{r, message = FALSE, warning = FALSE}
+paste('Total number of consumers having body-data log:',n_unique(heartrate$id))
+print('Columns in body data:')
+colnames(body)
+head(body)
+```
+Only 17 consumers out of 41 have their body-parameters log.  
+
+#### Distribution of daily body records amongst consumers
+
+```{r, message = FALSE, warning = FALSE}
+body %>% 
+  group_by(id) %>%
+  summarize( num_of_records = n_unique(date)) %>% 
+  ggplot(aes(x=id, y = num_of_records, fill =id))+ 
+  geom_col()+
+  labs(title = 'How much daily body data we have per consumer?',
+       subtitle = "Number of daily body records by consumer",
+       x = 'Consumer ID',
+       y = 'Number of records')+
+  geom_text(aes(x=id, y = num_of_records,label=num_of_records, vjust = -.25), size = 3)+
+  theme(legend.position = "none")
+
+ggsave("eda_body.png")
+```
+
+The body-data is also highly skewed amongst 17 consumers.
+
+
+## Relationship amongst attributes of activity data {.tabset}
+
+We will explore the relation between some pairs of attributes.
+
+### Distance vs Steps {-}
+
+```{r, message = FALSE, warning= FALSE}
+activity %>% 
+  ggplot(aes(x = steps, y = distance))+
+  geom_point() + geom_smooth()+
+  labs(title = 'Distance traversed vs Steps taken by consumers',
+      x = 'Step count', y = 'Distance traversed')+
+  theme(legend.position = "none")
+
+ggsave('distance_vs_steps.png')
+```
+
+**Finding: The number of steps and distance travelled are exactly linear.**
+
+### Calories burnt vs Total Active-time {-}
+```{r, message = FALSE}
+activity %>% 
+  mutate(total_active_time = fairly_active_minutes + lightly_active_minutes +
+           very_active_minutes) %>% # Compute total active-time
+  filter(total_active_time != 0) %>% 
+  # Remove the outlier
+  filter(!near(total_active_time,625, 10)) %>% 
+  ggplot(aes(x = total_active_time, y = calories))+
+  geom_point() + geom_smooth() +
+  labs(title = 'Calories burnt vs total active-time',
+       x = 'Total active-time (minutes)',
+       y = 'Calories burnt')+
+  theme(legend.position = "none")
+
+ggsave('calories_vs_activity.png')
+```
+
+**Finding:**  
+More minutes of activity implies more calories burnt.
+
+### Calories burnt vs Step count {-}
+```{r, message = FALSE}
+activity %>% 
+  ggplot(aes(x = steps, y = calories))+
+  geom_point()+
+  labs(title = 'Calories burnt vs Step count',
+       x = 'Number of steps', y = 'Calories burnt')+
+theme(legend.position = "none")
+```
+```{r, message = FALSE, warning = FALSE}
+ggsave("calories_vs_steps.png")
+```
+
+**Finding:**
+There appears 2 segment of users: 
+1. average_burners : who burn normal calories per step taken
+2. intense_burners: who burn aggressively per step taken
+
+Let's plot the distribution of how aggressively users burn calories per step
+
+#### Distribution of calories per step
+```{r, message = FALSE}
+activity %>% 
+  mutate(calorie_per_step = calories/steps) %>% 
+  filter(calorie_per_step<0.5) %>% 
+  ggplot(aes(x=calorie_per_step, y=..density..))+
+  geom_histogram(binwidth = 0.05, colour="black", fill="white")+
+  geom_density(alpha=.2, fill="red")+
+  labs(x = 'Calorie burnt per step', y = 'Density',
+       title = 'Distribution of calorie per step')+
+  geom_vline(aes(xintercept=mean(calorie_per_step)),
+             color="blue", linetype="dashed", size=1)+
+  scale_x_continuous(n.breaks = 10)+
+  geom_label(aes(x=mean(calorie_per_step), y= 6,
+            label=paste("Mean =",round(mean(calorie_per_step),3))))+
+  geom_label(aes(x = 2*mean(calorie_per_step), y = 7.5, label = 'Intense burners', size = 3))+
+  geom_label(aes(x = 0.5* mean(calorie_per_step), y= 7.5, label = 'Average burners', size = 3))+
+theme(legend.position = "none")
+
+ggsave("distribute_calories_per_step.png")
+```
+Since the distribution is bimodal, consumers can be segmented using the mean as shown.  
+Average burners burn less than 0.127 calorie/step, while Intense burners burn greater than 0.127 calorie/step.
+
+Let's plot the calories vs steps trends for both segments.
+
+#### Calories vs Steps trends for the two consumer segments:
+
+```{r, message = FALSE, warning=FALSE}
+activity %>% 
+  mutate(calorie_per_step = calories/steps) %>% 
+  mutate(burner_type = case_when(
+    calorie_per_step <= 0.127 ~ 'Average',
+    TRUE ~ 'Intense'
+  )) %>%
+  ggplot(aes(x = steps, y = calories, color = burner_type))+
+  geom_point()+
+  geom_smooth()+
+  labs(title = "Calories-vs-Steps Trends for two consumer segments",
+       x = 'Daily step count', y = 'Calories burnt')
+
+ggsave("calories_vs_steps_segments.png")
+```
+
+**Finding:**  
+The rate of burning calories per step is much higher in one segment of users than the other.
+
+As per [CDC](https://www.cdc.gov/obesity/adult/defining.html), a person can be categorized into 3 categories according to Body Mass Index (BMI).
+
+#### Body-type of consumers surveyed
+```{r, message=FALSE}
+body_types <- body %>% 
+  group_by(id) %>% 
+  summarize(body_mass_index = round(mean(bmi))) %>% 
+  drop_na() %>% 
+  mutate(body_type = case_when(
+    body_mass_index < 25 ~ 'Healthy',
+    body_mass_index %in% c(25,30) ~ 'Overweight',
+    TRUE ~ 'Obese'
+  ))
+body_types
+```
+Let's plot the calories vs steps trend for each body_type.
+
+```{r, warning=FALSE, message=FALSE}
+activity %>% 
+  merge(body_types, by = 'id') %>% 
+  ggplot(aes(x = steps, y = calories, color = body_type))+
+  geom_point() + geom_smooth()+
+  labs(title = "Calories-vs-Steps trends for body-types",
+       x = 'Daily step count', y = 'Calories burnt')
+
+ggsave("bodywise_calories_vs_steps.png")
+```
+
+**Finding:**
+Obese and Overweight consumers burn calories more aggresively as compared to healthy consumers.  
+* Aggressive burners = Obese + Overweight  
+* Average burners = Healthy
+
+
+## Average daily activity of consumers
+Let's summarize the daily activity done by each consumer, by averaging over all his/her available daily records.
+
+```{r, message = FALSE, warning=FALSE}
+avg_daily_activity <- activity %>% 
+  group_by(id) %>% 
+  summarise(avg_steps = mean(steps),
+            avg_cal = mean(calories),
+            avg_dist = mean(distance), 
+            avg_sedentary_min = mean(sedentary_minutes),
+            avg_fair_active_min = mean(fairly_active_minutes),
+            avg_very_active_min = mean(very_active_minutes),
+            avg_light_active_min = mean(lightly_active_minutes),
+            avg_sedentary_dist = mean(sedentary_active_distance),
+            avg_fair_active_dist = mean(moderately_active_distance),
+            avg_very_active_dist = mean(very_active_distance),
+            avg_light_active_dist = mean(light_active_distance))
+head(avg_daily_activity)
+```
+
+### Distribution of average daily activity amongst consumers
+```{r, message=FALSE, warning=FALSE}
+avg_cal_plot <- ggplot(avg_daily_activity)+
+  geom_histogram(mapping = aes(x=avg_cal, y=..density..),
+                 binwidth = 200, colour="black", fill="white")+
+  geom_density(aes(x= avg_cal),alpha=.2, fill="red")+
+  labs(x = 'Average daily calories burnt', y = 'Density',
+       title = 'Distribution of Avg Daily Calories',
+      tag = 'A')+
+  geom_vline(aes(xintercept=mean(avg_cal)),
+             color="blue", linetype="dashed", size=1)+
+  scale_x_continuous(n.breaks = 10)+
+  geom_label(aes(x=mean(avg_cal), y=0.001,
+            label= paste("Mean=",round(mean(avg_cal)))))+
+theme(legend.position = "none")
+               
+avg_steps_plot <- ggplot(avg_daily_activity)+
+  geom_histogram(mapping = aes(x=avg_steps, y=..density..),
+                 binwidth = 1000, colour="black", fill="white")+
+  geom_density(aes(x= avg_steps),alpha=.2, fill="red")+
+  labs(x = 'Average daily step-count', y = 'Density',
+       title = 'Distribution of Avg Daily Steps',
+      tag = 'B')+
+  geom_vline(aes(xintercept=mean(avg_steps)),
+             color="blue", linetype="dashed", size=1)+
+  scale_x_continuous(n.breaks = 10)+
+  geom_label(aes(x=mean(avg_steps), y=0.0002,
+            label= paste("Mean=",round(mean(avg_steps)))))+
+theme(legend.position = "none")
+
+avg_dist_plot <- ggplot(avg_daily_activity %>% drop_na())+
+  geom_histogram(mapping = aes(x=avg_dist, y=..density..),
+                 binwidth = 1, colour="black", fill="white")+
+  geom_density(aes(x= avg_dist),alpha=.2, fill="red")+
+  labs(x = 'Average daily distance (km)', y = 'Density',
+       title = 'Distribution of Avg Daily Distance',
+      tag = 'C')+
+  geom_vline(aes(xintercept=mean(avg_dist)),
+             color="blue", linetype="dashed", size=1)+
+  scale_x_continuous(n.breaks = 10)+
+  geom_label(aes(x=mean(avg_dist), y=0.25,
+            label= paste("Mean=",round(mean(avg_dist)))))+
+theme(legend.position = "none")
+
+grid.arrange(avg_cal_plot, avg_steps_plot, avg_dist_plot, ncol = 2)
+
+ggsave("distribute_avg_daily_activity.png")
+```
+**Findings:**
+1. On an average, a consumer of smart-device covers a distance of 5 kilometers by walking 6925 steps and burns around 2.1 kilo-calories per day.  
+2. Few consumers have daily average of less than 500 calories.
+
+[CDC](https://www.cdc.gov/diabetes/prevention/pdf/postcurriculum_session8.pdf) recommends 10000 steps and a distance of around 8 kilometers daily for good health. 
+
+
+#### Why is daily calorie average of few consumers less than 500 daily calories?
+Let's look at the individual daily-calories trend of those consumers to find out why.
+```{r, message=FALSE, warning=FALSE}
+less_than_500cal_users <- avg_daily_activity %>%
+    filter(avg_cal < 500)%>%
+    select(id)
+print("Consumers burning less than 500 daily calories on an average:")
+less_than_500cal_users
+
+activity %>% merge(less_than_500cal_users, by.y = TRUE) %>%
+    ggplot(aes(x=date, y = calories)) + 
+    geom_line(alpha = 0.7, color = 'darkblue') + geom_point(color='black', alpha = 0.5)+
+  facet_wrap(~id, scales = "free")+
+labs(title = 'Trends of calories for consumers burning less than 500 calories as daily average',
+    x = 'Date', y = 'Calories burnt')+
+theme(legend.position = "none")
+
+ggsave("less_cal_individual_trends.png")
+```
+
+It is observed that Consumer-2 always had daily calories burnt under 250 calories with few days of zero-calories.  
+Consumers 4, 5 & 6 had many days where their tracker recorded zero-calories.
+
+**Finding:**
+Some consumers have less than 500 calories of daily average due to:  
+1. Zero calories recorded by the device on some days, and/or  
+2. Too few calories burnt each day.
+
+#### Are there any other consumers having zero-calorie records?
+Let's find out the proportion of daily records having zero-calorie readings for each consumer
+```{r, message=FALSE, warning=FALSE}
+activity %>% 
+  group_by(id) %>% 
+  summarize(total_days = n(), zero_cal_days = sum(calories== 0)) %>% 
+  mutate(percent_of_zero_cal = round(zero_cal_days*100/total_days,2)) %>% 
+  ggplot() + 
+  geom_col( mapping = aes(x= id, y = percent_of_zero_cal, fill = id)) +
+  labs(title = 'How frequent are zero-calories readings?',
+       subtitle = "Percentage of daily records with zero-calories by consumers",
+       x = 'Consumer ID',
+       y = 'Proportion of records with zero-calories')+
+  geom_text(aes(x= id, y = percent_of_zero_cal, 
+                label = paste0(round(percent_of_zero_cal),'%'), vjust = -0.25),
+            size = 3)+
+theme(legend.position = "none")
+
+ggsave("zero_cal.png")
+```
+
+12 out of 41 consumers under analyses had 2-35 % days of zero-calorie records.
+
+A Smart-device consumer may have upto 35 % of records with calories recorded as zero.
+This may happen due to variety of reasons:
+1. The user may have forgot to wear the tracker.
+2. The user didn't switch on the tracker
+3. Tracker malfunctioned.
+4. User spends some days in restricted areas like exam hall where smart devices are prohibited.
+
+
+#### Are the zero-calorie readings dependent upon the day?
+
+```{r, message=FALSE, warning=FALSE}
+activity %>%
+  mutate(day = weekdays(date)) %>%
+  group_by(id,day) %>% 
+  summarize(percent_of_zero_cal = 100*sum(calories==0)/n(),)  %>% 
+  group_by(day) %>% 
+  summarize(avg_percent = mean(percent_of_zero_cal))%>% 
+  ggplot(aes(x = factor(day, levels = c('Monday','Tuesday',
+                                                        'Wednesday','Thursday',
+                                                        'Friday','Saturday',
+                                                        'Sunday')),
+                         y = avg_percent))+
+  geom_line(color = 'darkblue',aes(group =1)) + geom_point()+
+  labs(subtitle = "Percentage of Zero-Calories vs Day",
+       title = 'Is the zero-calorie reading dependent upon the day?',
+       x = '', y = 'Proportion of zero-calorie occurences')+
+  geom_label(aes(x= day, y = avg_percent, 
+                label = paste(round(avg_percent,1),'%')), 
+             size = 3)+
+theme(legend.position = "none")
+
+ggsave("daywise_zero_cal.png")
+```
+
+The percentage of zero-calories readings are fairly constant (varies from `0.6` to `2.4 %`) across weekdays, indicating little to no-correlation between zero-calories reading and day.
+
+**Finding:**
+Zero-calories readings are not dependent upon the day.
+
+#### Are there any consumers with zero-steps readings on some day?
+```{r, message=FALSE, warning=FALSE}
+activity %>% 
+  group_by(id) %>% 
+  summarize(total_days = n(), zero_steps_days = sum(steps== 0)) %>% 
+  mutate(percent_of_zero_steps = round(zero_steps_days*100/total_days,2)) %>% 
+  ggplot() + 
+  geom_col( mapping = aes(x= id, y = percent_of_zero_steps, fill = id)) +
+  labs(title = 'Do consumers have zero-steps readings?',
+       subtitle = "Percentage of daily records with zero-steps by consumers",
+       x = 'Consumer ID',
+       y = 'Proportion of records with zero-steps')+
+  geom_text(aes(x= id, y = percent_of_zero_steps, 
+                label = paste0(round(percent_of_zero_steps),'%'), vjust = -0.25), size = 3)+
+theme(legend.position = "none")
+
+ggsave("zero_steps.png")
+```
+
+A consumer may have upto 75% of the days with zero-steps recorded.  
+Let's look at the distribution of zero-steps readings amongst users.
+```{r, message = FALSE, warning = FALSE}
+activity %>% 
+  group_by(id) %>% 
+  summarize(total_days = n(), zero_steps_days = sum(steps== 0)) %>% 
+  mutate(percent_of_zero_steps = round(zero_steps_days*100/total_days,2)) %>% 
+  ggplot(aes(x=percent_of_zero_steps, y=..density..))+ 
+  geom_histogram(binwidth = 10, colour="black", fill="white")+
+  geom_density(alpha=.2, fill="red")+
+  labs(x = 'Percentage of zero-steps records', y = 'Density',
+       title = 'How frequent are Zero-Step records?')+
+  geom_vline(aes(xintercept=mean(percent_of_zero_steps)),
+             color="blue", linetype="dashed", size=1)+
+  scale_x_continuous(n.breaks = 10)+
+  geom_label(aes(x=mean(percent_of_zero_steps), y=0.05,
+            label= paste("Mean=",round(mean(percent_of_zero_steps)))),
+            size = 3)+
+theme(legend.position = "none")
+
+ggsave("zero_steps_distribution.png")
+```
+
+**Finding:**
+On an average, a consumer has `12 %` of daily records with number of steps recorded as zero.
+
+#### Are the zero-steps readings dependent upon the day?
+```{r, message = FALSE, warning = FALSE}
+activity %>%
+  mutate(day = weekdays(date)) %>%
+  group_by(id,day) %>% 
+  summarize(percent_of_zero_steps = 100*sum(steps==0)/n(),)  %>% 
+  group_by(day) %>% 
+  summarize(avg_percent = mean(percent_of_zero_steps))%>% 
+  ggplot(aes(x = factor(day, levels = c('Monday','Tuesday',
+                                                        'Wednesday','Thursday',
+                                                        'Friday','Saturday',
+                                                        'Sunday')),
+                         y = avg_percent))+
+  geom_line(color = 'darkblue',aes(group =1)) + geom_point()+
+  labs(subtitle = "Percentage of Zero-Steps vs Day",
+       title = 'Is the zero-step reading dependent upon the day?',
+       x = '', y = 'Proportion of zero-step occurences')+
+  geom_label(aes(x= day, y = avg_percent, 
+                label = paste(round(avg_percent,1),'%')),
+             size = 3)+
+theme(legend.position = "none")
+
+ggsave("daywise_zero_steps.png")
+```
+
+**Findings:** 
+There is no such particular day at which steps are not tracked. However, steps are tracked most regular on Wednesday.
+
+
+## Device usage statistics
+
+### Total time of daily device usage
+```{r, message = FALSE, warning = FALSE}
+avg_daily_activity %>% 
+  group_by(id) %>% 
+  summarize(total_device_time = avg_sedentary_min + avg_light_active_min+
+              avg_fair_active_min + avg_very_active_min) %>% 
+  drop_na() %>%  #drop consumers with no time data
+  ggplot() + 
+  geom_histogram(mapping = aes(x=total_device_time, y=..density..),
+                   binwidth = 60, colour="black", fill="white")+
+  geom_density(aes(x= total_device_time),alpha=.2, fill="red")+
+  geom_vline(aes(xintercept=mean(total_device_time)),
+               color="blue", linetype="dashed", size=1)+
+  scale_x_continuous(n.breaks = 10)+
+  geom_label(aes(x=mean(total_device_time),y = 0.003,
+            label=paste("Mean",round(mean(total_device_time)))))+
+  labs(title = 'How often consumers use their devices daily',
+      subtitle = 'Distribution of average minutes of device use',
+       x = 'Average daily device usage (minutes)')+
+theme(legend.position = "none")
+
+ggsave("device_time_distribution.png")
+```
+
+The histogram depicts the bimodal distribution of device usage, where either the device is used around 1400 minutes frequently or around 1000 minutes.
+
+**Finding:**  
+On an average, a consumer uses device for 1217 minutes, i.e., roughly 20 hours daily.
+
+Lower device-usage time may be due to:  
+1. Frequent charging requirement  
+2. User forgot to put on the tracker  
+
+Now, let's see how this device use time is distributed accross different activities.
+
+### Device-time distribution across different intensity of activities
+
+```{r, message = FALSE, warning = FALSE}
+avg_sedentary_min_plot <- ggplot(avg_daily_activity %>% drop_na())+
+  geom_histogram(mapping = aes(x=avg_sedentary_min, y=..density..),
+                 binwidth = 60, colour="black", fill="white")+
+  geom_density(aes(x= avg_sedentary_min),alpha=.2, fill="red")+
+  labs(x = 'Average Sedentary Minutes', y = 'Density',
+       title = 'Distribution of Sedentary time')+
+  geom_vline(aes(xintercept=mean(avg_sedentary_min)),
+             color="blue", linetype="dashed", size=1)+
+  scale_x_continuous(n.breaks = 10)+
+  geom_label(aes(x=mean(avg_sedentary_min), y= 0.003,
+            label=paste("Mean =", round(mean(avg_sedentary_min)))))+
+theme(legend.position = "none")
+
+avg_light_active_min_plot <- ggplot(avg_daily_activity %>% drop_na())+
+  geom_histogram(mapping = aes(x=avg_light_active_min, y=..density..),
+                 binwidth = 60, colour="black", fill="white")+
+  geom_density(aes(x= avg_light_active_min),alpha=.2, fill="red")+
+  labs(x = 'Average Light-Active Minutes', y = 'Density',
+       title = 'Distribution of Light-Active time')+
+  geom_vline(aes(xintercept=mean(avg_light_active_min)),
+             color="blue", linetype="dashed", size=1)+
+  scale_x_continuous(n.breaks = 10)+
+  geom_label(aes(x=mean(avg_light_active_min), y= 0.006,
+            label=paste("Mean =", round(mean(avg_light_active_min)))))+
+theme(legend.position = "none")
+
+avg_fair_active_min_plot <- ggplot(avg_daily_activity %>% drop_na())+
+  geom_histogram(mapping = aes(x=avg_fair_active_min, y=..density..),
+                 binwidth = 20, colour="black", fill="white")+
+  geom_density(aes(x= avg_fair_active_min),alpha=.2, fill="red")+
+  labs(x = 'Average Fairly Active Minutes', y = 'Density',
+       title = 'Distribution of Fairly-Active time')+
+  geom_vline(aes(xintercept=mean(avg_fair_active_min)),
+             color="blue", linetype="dashed", size=1)+
+  scale_x_continuous(n.breaks = 10)+
+  geom_label(aes(x=mean(avg_fair_active_min), y= 0.03,
+            label=paste("Mean =", round(mean(avg_fair_active_min)))))+
+theme(legend.position = "none")
+
+avg_very_active_min_plot <- ggplot(avg_daily_activity %>% drop_na())+
+  geom_histogram(mapping = aes(x=avg_very_active_min, y=..density..),
+                 binwidth = 20, colour="black", fill="white")+
+  geom_density(aes(x= avg_very_active_min),alpha=.2, fill="red")+
+  labs(x = 'Average Very Active Minutes', y = 'Density',
+       title = 'Distribution of Very-Active time')+
+  geom_vline(aes(xintercept=mean(avg_very_active_min)),
+             color="blue", linetype="dashed", size=1)+
+  scale_x_continuous(n.breaks = 10)+
+  geom_label(aes(x=mean(avg_very_active_min), y= 0.03,
+            label=paste("Mean =", round(mean(avg_very_active_min)))))+
+theme(legend.position = "none")
+
+grid.arrange(avg_sedentary_min_plot, avg_light_active_min_plot,
+             avg_fair_active_min_plot, avg_very_active_min_plot, nrow =2)
+
+ggsave("activity_time_distribution.png")
+```
+
+**Finding:**
+On an average, a consumer spends 1004 minutes (16.7 hours) in sedentary activities,
+182 minutes (3 hours) in light, 15 minutes in moderate, while 19 minutes in intense activities.
+
+Higher sedentary time daily may pose risk to the metabolic health of an individual, especially sitting for prolonged periods ([ref](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3404815/)).  
+
+[Experts recommend](https://www.mayoclinic.org/healthy-lifestyle/adult-health/expert-answers/sitting/faq-20058005) taking a break from sitting every 30 minutes.  
+
+
+## Day dependence of user activity
+
+### Dependence of sedentary period on the day of week?
+
+Let's plot the average daily sedentary time of users vs day to find out.
+
+```{r, message = FALSE, warning = FALSE}
+activity %>% 
+  mutate(day = weekdays(date)) %>% 
+  drop_na() %>% 
+  group_by(id, day) %>% 
+  summarize(avg_sed_time = mean(sedentary_minutes)) %>% 
+  group_by(day) %>% 
+  summarize(daywise_sed_time = mean(avg_sed_time)) %>% 
+  ggplot(aes(x = factor(day, levels = c('Monday','Tuesday',
+                                            'Wednesday','Thursday',
+                                            'Friday','Saturday',
+                                            'Sunday')), 
+             y = daywise_sed_time, group =1))+
+  geom_line()+
+  labs(title = 'Average Daily Sedentary minutes by Day',
+                   x = '', y = 'Average Sedentary Time (min)')+
+  geom_label(aes(label = round(daywise_sed_time)),size = 3)+
+theme(legend.position = "none")
+
+ggsave("daywise_sedentary.png")
+```
+
+**Finding:**
+On an avearge, consumers spend least time seated on Saturdays, while they sit longest on Mondays.
+
+
+### Dependence of consumer's active-time on the day of week {.tabset}
+Let's plot the daywise trend of average step-count, light-active time, fairly-active time & very-active time to find out.
+```{r, message = FALSE, warning = FALSE}
+activity_by_weekday <- activity %>% 
+  mutate(day = weekdays(date)) %>% 
+  group_by(id,day) %>% 
+  summarize(avg_light_active_min = mean(lightly_active_minutes),
+            avg_fair_active_min = mean(fairly_active_minutes),
+            avg_very_active_min = mean(very_active_minutes),
+            avg_steps = mean(steps)) %>% 
+  drop_na() %>% 
+  group_by(day) %>% 
+  summarize(light_min = mean(avg_light_active_min),
+            moderate_min = mean(avg_fair_active_min),
+            intense_min = mean(avg_very_active_min),
+            avg_steps_by_day = mean(avg_steps))
+```
+
+#### Average step-count vs Day {-} 
+```{r, message = FALSE, warning = FALSE}
+ggplot(activity_by_weekday,
+       aes(x = factor(day, levels = c('Monday','Tuesday',
+                                          'Wednesday','Thursday',
+                                           'Friday','Saturday',
+                                           'Sunday')), 
+           y= avg_steps_by_day, group =1))+
+    geom_line() + geom_point() + labs(title = 'Average number of steps by Day',
+                            x = '', y = 'Average step-count')+
+  geom_label(aes(label = round(avg_steps_by_day,0)))+
+theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggsave("daywise_step_count.png")
+```
+
+#### Average Light-Active minutes vs Day {-} 
+```{r, message = FALSE, warning = FALSE}
+ggplot(activity_by_weekday,
+                          aes(x = factor(day, levels = c('Monday','Tuesday',
+                                                                 'Wednesday','Thursday',
+                                                                 'Friday','Saturday',
+                                                                 'Sunday')), 
+                                  y= light_min, group =1))+
+  geom_line()+geom_point()+labs(title = 'Average Light-Active Time by Day',
+                     x = '', y = 'Average Light-Active minutes')+
+  geom_label(aes(label = round(light_min,1)))+
+theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggsave("daywise_light_activity.png")
+```
+
+#### Average Very-Active minutes vs Day {-} 
+```{r, message = FALSE, warning = FALSE}
+ggplot(activity_by_weekday,
+                                aes(x = factor(day, levels = c('Monday','Tuesday',
+                                                                   'Wednesday','Thursday',
+                                                                   'Friday','Saturday',
+                                                                   'Sunday')), 
+                                    y= moderate_min, group =1))+
+  geom_line()+geom_point()+labs(title = 'Average Fairly-Active Time by Day',
+                     x = '', y = 'Average Fairly-Active minutes')+
+  geom_label(aes(label = round(moderate_min,1)))+
+theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggsave("daywise_moderate_activity.png")
+```
+
+#### Average Very-Active minutes vs Day {-} 
+```{r, message = FALSE, warning = FALSE}
+ggplot(activity_by_weekday,
+                              aes(x = factor(day, levels = c('Monday','Tuesday',
+                                                                 'Wednesday','Thursday',
+                                                                 'Friday','Saturday',
+                                                                 'Sunday')), 
+                                  y= intense_min, group =1))+
+  geom_line()+geom_point()+labs(title = 'Average Very-Active Time by Day',
+                     x = '', y = 'Avg Very-Active min')+
+  geom_label(aes(label = round(intense_min,1)))+
+theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
+
+#grid.arrange(steps_vs_day_plot, light_activity_plot, moderate_activity_plot,
+#             intense_activity_plot,nrow = 2)
+
+ggsave("daywise_intense_activity.png")
+```
+
+**Finding:** 
+On an average, consumers are most active on Saturdays and least active on Sundays.
+
+
+## Sleep data availability
+
+How often daily sleep data is recorded as compared to compared to daily activity data?
+```{r, message = FALSE, warning = FALSE}
+sleep_summary <- sleep %>% 
+  merge(data.frame(id = c(1:41)), all = TRUE) %>% 
+  group_by(id) %>% 
+  summarize(n_sleep_records = n_unique(date))
+activity_summary <- activity %>% 
+  group_by(id) %>% 
+  summarize(n_activity_records = n_unique(date))
+sleep_data_availability <- merge(sleep_summary,activity_summary,all = TRUE) %>% 
+  group_by(id) %>% 
+  summarize(sleep_record_percent = n_sleep_records*100/n_activity_records)
+
+ggplot(sleep_data_availability) +
+  geom_histogram(mapping = aes(x= sleep_record_percent, y=..density..),
+                 binwidth = 10, colour="black", fill="white")+
+  geom_density(aes(x= sleep_record_percent),alpha=.2, fill="red")+
+  labs(x = 'Proportion of days with both sleep & activity records (%)', y = 'Density',
+       subtitle = 'Availability percent of sleep data per consumer',
+      title = 'What is the percentage of days for which sleep data is available in addition to activity data?')+
+  geom_vline(aes(xintercept=mean(sleep_record_percent)),
+             color="blue", linetype="dashed", size=1)+
+  scale_x_continuous(n.breaks = 10)+
+  geom_label(aes(x=mean(sleep_record_percent), y= 0.03,
+            label=paste("Mean =",round(mean(sleep_record_percent)),"%")), 
+            size = 3)+
+theme(legend.position = "none")
+
+ggsave("sleep_availability.png")
+```
+
+**Finding:**
+On an average, a consumer has 34% of his/her daily records having both sleep and activity data.
+
+
+## Sleep-time statistics
+
+### Distribution of sleep-duration across consumers
+
+```{r, message = FALSE, warning = FALSE}
+sleep %>% 
+  group_by(id) %>% 
+  summarize(avg_sleep_time = mean(sleep_time)) %>% 
+  ggplot() +
+  geom_histogram(mapping = aes(x= avg_sleep_time, y=..density..),
+                 binwidth = 60, colour="black", fill="white")+
+  geom_density(aes(x= avg_sleep_time),alpha=.2, fill="red")+
+  labs(x = 'Average Daily Sleep minutes', y = 'Density',
+       title = 'Histogram of average daily sleep-time across consumers')+
+  geom_vline(aes(xintercept=mean(avg_sleep_time)),
+             color="blue", linetype="dashed", size=1)+
+  scale_x_continuous(n.breaks = 10)+
+  geom_label(aes(x=mean(avg_sleep_time), y= 0.005,
+            label=paste("Mean =",round(mean(avg_sleep_time))) ), size = 3)+
+theme(legend.position = "none")
+
+ggsave("sleep_time_distribution.png")
+```
+
+**Findings:** 
+1. On an average, a consumer sleeps for `356 minutes`, i.e., roughly `6 hours` daily.  
+2. Some consumers have average daily sleep less than 240 minutes.
+
+[CDC](https://www.cdc.gov/sleep/about_sleep/how_much_sleep.html) recommends more than 7 hours of sleep per night for adults.
+
+### Proportion of consumers with inadequate sleep
+
+```{r, message = FALSE, warning = FALSE}
+sleep %>% 
+  group_by(id) %>% 
+  summarize(avg_sleep_time = mean(sleep_time)) %>% 
+  summarize(n_less_sleep = sum(avg_sleep_time < 420)/n_unique(id),
+            n_adequate_sleep = sum(avg_sleep_time >= 420)/n_unique(id))
+```
+
+**Finding:**
+60% of the consumers under study had inadequate sleep
+
+
+### Daily trends for consumers with average sleep less than 4 hours.
+
+```{r, message = FALSE, warning = FALSE}
+sleep %>% 
+  group_by(id) %>% 
+  summarize(avg_sleep_time = mean(sleep_time)) %>% 
+  filter(avg_sleep_time < 240) %>% 
+  merge(sleep, all.x = TRUE) %>% 
+  ggplot(aes(x = date, y = sleep_time))+
+  geom_line(color = 'darkblue', alpha = 0.7, group =1)+ 
+  geom_point(color = 'black', alpha = 0.5)+
+  facet_wrap(~id, scales = "free", ncol = 2)+
+labs(title = 'Individual trends of consumers with less than 240 min average daily sleep',
+    y = 'Sleep time in minutes')+
+theme(legend.position = "none")
+
+ggsave("less_sleepy_consumers.png")
+```
+
+**Finding:**
+Few users do not track their sleep on most days.
+
+
+## Day dependence of consumer's sleep-time
+
+```{r, message = FALSE, warning = FALSE}
+all_weekdays_ids <- (sleep %>% 
+  mutate(day = weekdays(date)) %>% 
+  group_by(id) %>% 
+  summarize(n_unique_weekdays = n_unique(day)) %>% 
+  filter(n_unique_weekdays == 7) %>% 
+  select(id))[['id']]
+
+sleep %>% 
+  select(id, date, sleep_time) %>%
+  mutate(day = weekdays(date)) %>% 
+  drop_na() %>% 
+  group_by(id, day) %>% 
+  summarize(avg_sleep_time = mean(sleep_time)) %>% 
+  # delete sleep records for consumers with any day avg sleep time missing
+  filter(id %in% all_weekdays_ids) %>% 
+  group_by(day) %>% 
+  summarize(daywise_sleep = mean(avg_sleep_time)) %>%
+  ggplot(aes(factor(day, levels = c('Monday','Tuesday',
+                                                    'Wednesday','Thursday',
+                                                    'Friday','Saturday',
+                                                    'Sunday')),
+                          y = daywise_sleep))+
+  geom_line(color = 'darkblue', aes(group =1))+
+  theme(legend.position = "none")+
+  geom_label(aes(y = daywise_sleep, x = day, label = round(daywise_sleep,0)),
+             size = 3)+
+  labs(title = 'Average daily sleep duration vs day',
+       x = '', y = 'Average sleep-time (minutes)')+
+theme(legend.position = "none")
+
+ggsave("daywise_sleep.png")
+```
+
+**Finding:**
+Consumers sleep longest on Saturday & Sundays, which is obvious due to the greater amount of leisure available on weekends.
+
+## Sleep efficiency of consumers
+
+### Are consumers too much awake during bed-time?
+
+```{r, message = FALSE, warning = FALSE}
+sleep %>% 
+  filter(sleep_time != 0) %>% 
+  select(id,wake_time, bed_time, sleep_time) %>% 
+  drop_na() %>% 
+  group_by(id) %>% 
+  summarize(avg_wake_time = mean(wake_time), avg_bed_time = mean(bed_time)) %>% 
+  ggplot() +
+  geom_histogram(aes(x= avg_wake_time, y=..density..),binwidth = 10, 
+                 colour="black", fill="white")+
+  geom_density(aes(x= avg_wake_time), alpha=.2, fill="red")+
+  labs(x = 'Average minutes of wake-time', y = 'Density',
+       title = 'Are consumers too much awake while on bed?',
+       subtitle = 'Distribution of wake-time amongst consumers')+
+  geom_vline(aes(xintercept=mean(avg_wake_time)),
+             color="blue", linetype="dashed", size=1)+
+  scale_x_continuous(n.breaks = 10)+
+  geom_text(aes(x=mean(avg_wake_time), y= 0.03,
+            label=paste("Mean =",round(mean(avg_wake_time)))), size = 3) +
+theme(legend.position = "none")
+
+ggsave("wake_time_distribution.png")
+```
+
+**Finding:**
+On an average, a consumer spends 38 minutes being on bed but not sleeping.
+
+### How much proportion does wake-time take of the total bed-time?
+
+```{r, message = FALSE, warning = FALSE}
+sleep %>% 
+  filter(sleep_time != 0) %>% 
+  select(id,wake_time, bed_time, sleep_time) %>% 
+  drop_na() %>% 
+  group_by(id) %>% 
+  summarize(avg_wake_time = mean(wake_time), avg_bed_time = mean(bed_time)) %>% 
+  mutate(wake_time_percent = avg_wake_time*100/avg_bed_time) %>% 
+  ggplot() +
+  geom_histogram(aes(x= wake_time_percent, y=..density..),binwidth = 10, 
+                 colour="black", fill="white")+
+  geom_density(aes(x= wake_time_percent), alpha=.2, fill="red")+
+  labs(x = 'Proportion of bed-time wasted (%)', y = 'Density',
+       title = 'How much proportion does wake-time take of the total bed-time?',
+       subtitle = 'Distribution of Percentage of bed-time wasted')+
+  geom_vline(aes(xintercept=mean(wake_time_percent)),
+             color="red", linetype="dashed", size=1)+
+  scale_x_continuous(n.breaks = 10)+
+  geom_label(aes(x=mean(wake_time_percent), y= 0.12,
+            label=paste("Mean = ",round(mean(wake_time_percent)))), size = 3)+
+theme(legend.position = "none")
+
+ggsave("bed_time_wasted.png")
+```
+
+**Finding:**  
+A consumer wasted 8% of their total bed time on an average while awake.
+
+Sleep efficiency can be improved by:  
+1. Meditation practices to relax for better sleep.  
+2. Cutting-off from using digital displays around 2 hours prior to usual bed-time ([Reference](https://www.healthline.com/nutrition/17-tips-to-sleep-better#2.-Reduce-blue-light-exposure-in-the-evening))
+
+## Quality of consumer's sleep
+```{r, message = FALSE, warning = FALSE}
+print('Number of consumers with sleep-type data:')
+sleep %>% 
+  select(id,deep_sleep_time, sleep_time, shallow_sleep_time) %>% 
+  drop_na() %>% 
+  summarize(num_of_consumers = n_unique(id))
+```
+
+**Finding:**
+Only 3 consumers have sleep-quality data.
+Deep sleep, also referred to as REMS (Rapid Eye Movement Sleep), is important for proper repair of body and mind ([refer](https://www.healthline.com/health/how-much-deep-sleep-do-you-need#:~:text=early%20aging-,Takeaway,8%20hours%20of%20nightly%20sleep.)).
+The quality of sleep can be determined by the duration of REMS a consumer has.
+
+## Heart-rate data availability
+
+```{r, message = FALSE, warning = FALSE}
+hourly_heartrate <- heartrate %>% 
+  mutate(hour = substr(time, 1, 2)) %>% 
+  group_by(id, date, hour) %>% 
+  summarize(hourly_heart_rate = mean(heart_rate))
+
+daily_heartrate <- heartrate %>% 
+  group_by(id, date) %>% 
+  summarize(avg_heartrate = mean(heart_rate),
+            min_heartrate = min(heart_rate),
+            max_heartrate = max(heart_rate),
+            dev_heartrate = sd(heart_rate))
+
+hourly_hr_availability <- hourly_heartrate %>% 
+  group_by(id, date) %>% 
+  summarize(hours_count = n())
+
+daily_hr_availability <- daily_heartrate %>% 
+  group_by(id) %>% 
+  summarize(hr_days_count = n())
+  
+daily_activity_availability <- activity %>% 
+  group_by(id) %>% 
+  summarize(activity_days_count = n())
+
+merge(daily_hr_availability, daily_activity_availability, all = TRUE) %>% 
+mutate(hr_days_count = coalesce(hr_days_count, 0)) %>% 
+mutate(hr_by_activity_percent = hr_days_count*100/activity_days_count) %>% 
+ggplot(aes(x = hr_by_activity_percent, y= ..density..)) +
+geom_histogram(binwidth = 10, 
+             colour="black", fill="white")+
+geom_density( alpha=.2, fill="red")+
+labs(x = 'Proportion of days with both heart-rate & activity records (%)', y = 'Density',
+       title = 'Availability percent of heart-rate data per consumer',
+      subtitle = 'How much heart-rate data is available as compared to compared to daily activity data?')+
+geom_vline(aes(xintercept=mean(hr_by_activity_percent)),
+         color="red", linetype="dashed", size=1)+
+scale_x_continuous(n.breaks = 10)+
+geom_label(aes(x=mean(hr_by_activity_percent), y= 0.05,
+        label=paste("Mean =",round(mean(hr_by_activity_percent)))), size = 3)+
+theme(legend.position = "none")
+
+ggsave("hr_availability.png")
+```
+
+**Finding:**
+On an average, a consumer records daily heartrate one-fourth times as compared to recording the daily activity.
+
+## Comprehensiveness of daily heartrate record
+
+It is expected that heart-rate is recorded every hour. Are the available daily heartrate records complete?
+
+```{r, message = FALSE, warning = FALSE}
+hourly_hr_availability %>% 
+  group_by(id) %>% 
+  summarize(avg_hours_count = mean(hours_count))%>%
+  ggplot(aes(x = avg_hours_count, y= ..density..)) +
+  geom_histogram(binwidth = 4, 
+                 colour="black", fill="white")+
+  geom_density( alpha=.2, fill="red")+
+  labs(x = 'Hours of recorded heartrate', y = 'Density',
+       title = 'Distribution of hours of heartrate available')+
+  geom_vline(aes(xintercept=mean(avg_hours_count)),
+             color="red", linetype="dashed", size=1)+
+  scale_x_continuous(n.breaks = 12)+
+  geom_label(aes(x=mean(avg_hours_count), y= 0.05,
+            label=paste("Mean =", round(mean(avg_hours_count)))), size = 3)+
+theme(legend.position = "none")
+
+ggsave("hr_comprehensiveness.png")
+```
+
+**Finding:**
+On an average, 16 hours of heartbeat was recorded daily by a consumer.
+
+Certain heart-rate ranges are more efficient for metabolising fats during workouts ([Refer](https://health.clevelandclinic.org/serious-about-your-workouts-get-a-heart-rate-monitor/)). This may be hightly beneficial to obese and overweight persons with fat-reducing targets. 
+
+Tracking pulse-rate can help determine general cardiovascular health of an individual; whether heart-rate remains in the safe levels of bpm each day.   
+
+## Relationship between daily calories burnt & daily heartrate
+
+```{r, message = FALSE, warning = FALSE}
+daily_heartrate %>% 
+  merge(activity, all = TRUE) %>% 
+  select(id, avg_heartrate, min_heartrate, max_heartrate, dev_heartrate,
+         calories) %>% 
+  drop_na() %>%
+  ggplot(aes( x = avg_heartrate,y = calories))+
+  geom_point() + geom_smooth()+
+geom_vline(aes(xintercept= 90),
+             color="red", linetype="dashed", size=1)+
+labs(title = 'Is daily calories burnt related to daily heartrate ?',
+    subtitle = 'Calories burnt vs Average heartrate',
+    y = 'Calories burnt', x = 'Average daily heartrate')+
+theme(legend.position = "none")
+
+ggsave("cal_vs_hr.png")
+```
+
+**Finding:**
+The higher average heartrate is associated with higher amount of calories burnt till 90 bpm heartrate.
+Beyond 90 bpm, the proportionality relation ceases to exist, and calories burnt decrease with higher heartrate.
+
+It seems that consumers with moderate activity throughout the day burnt more calories as compared to vigorously exercising individuals. However, strong conclusion can't be drawn as notion of 'high' or 'low' heartrate depends on age of an individual, the consumer attribute which is left unrecorded by all fitness trackers.  
+
+The safe zones of heart-rate are decided by the age of individual, as recommended by [CDC](https://www.cdc.gov/physicalactivity/basics/measuring/heartrate.htm). Hence, adding the age to the bodily parameters will be highly effective to fully use heartrate data.
+
+## Body data availability
+
+```{r, message = FALSE, warning = FALSE}
+body_data_availability <- body %>% 
+  group_by(id) %>% 
+  summarize(body_days_count = n_unique(date))
+  
+daily_activity_availability <- activity %>% 
+  group_by(id) %>% 
+  summarize(activity_days_count = n())
+
+merge(body_data_availability, daily_activity_availability, all = TRUE) %>% 
+mutate(body_days_count = coalesce(body_days_count, 0)) %>% 
+mutate(body_by_activity_percent = body_days_count*100/activity_days_count) %>% 
+ggplot(aes(x = body_by_activity_percent, y= ..density..)) +
+geom_histogram(binwidth = 10, 
+             colour="black", fill="white")+
+geom_density( alpha=.2, fill="red")+
+labs(x = 'Proportion of days with both body & activity records (%)', y = 'Density',
+       subtitle = 'Availability percent of body data per consumer',
+      title = 'How much body data is available as compared to compared to daily activity data?')+
+geom_vline(aes(xintercept=mean(body_by_activity_percent)),
+         color="red", linetype="dashed", size=1)+
+scale_x_continuous(n.breaks = 10)+
+geom_label(aes(x=mean(body_by_activity_percent), y= 0.05,
+        label=paste("Mean =",round(mean(body_by_activity_percent)))), size = 3)+
+theme(legend.position = "none")
+
+ggsave("body_data_availability.png")
+```
+
+**Finding:**
+On an average, a consumer records daily body-data less than one-tenth times as compared to recording the daily activity.
+
+The individual attributes: weight and height are important to determine the Body-Mass Index, an important factor for determining calories and steps goals.  Knowledge of body-parameters can be helpful for personalized recommendations to consumers.
+
+
+# Key Insights
+1. Less than 50% of consumers tracked their heart-rate and body-parameters(height, weight, fat, etc), in addition to activity and sleep.
+2. Consumers missed upto 35% of times tracking their daily calories & upto 75% of times their daily step count.
+3. There are 2 segments of users: 'average burners' and 'intense burners'. Intense-burners,comprising of overweight and obese consumers, burnt higher number of calories for the same number of steps as compared to average burners who are healthy consumers.
+4. Duration of REM sleep was not tracked for most of the users.  
+5. On an average, a consumer  
+ * covered a distance of 5 kilometers by traveling 6925 steps and burnt around 2.1 kilo-calories per day. This is too less than recommended by CDC for good health.  
+ * used tracker for 20 hours a day.  
+ * spent 16.7 hours in sedentary, 3 hours in light, 15 minutes in moderate, and 19 minutes in intense activity.  
+ * spent time seated the most on Mondays, while least on Saturdays.  
+ * was the most active on Saturday and the least on Sundays.  
+ * tracked sleep one-third times he/she tracked daily activity.  
+ * slept for 6 hours daily, which is less than recommended sleep of more than 7 hours.  
+ * slept longest (more than 7 hours) on Sunday.  
+ * wasted 8% of their total bed-time being awake.  
+ * tracked heart-rate one-fourth of the days he/she tracked activity.  
+ * tracked only 16 hours of heart-rate in a day.   
+ * recorded daily body-data less than one-tenth times as compared to recording the daily activity.  
+
+# Recommendations
+
+## Advertisement Content
+
+  1. Leaf Chakra is effective at tracking sleep, heart-rate, stress & reproductive
+  health of consumer along with activity data, providing a single-device solution
+  for consumers who often miss track of their sleep & heart-rate.
+  2. Women won't miss a minute on their fitness tracking, as Leaf Chakra works 24*7 with no need of 
+  charging and being shower-safe.
+  3. Leaf Chakra comes with a subscription of chakra energizing and relaxation techniques, that will 
+  help consumers achieve improved sleep efficiency.
+  4. CDC recommends certain amount of daily walk  and sleep for sound health, and the tracker can
+  help monitor these daily goals.
+  5. Certain heart-rate zones are more effective at burning fat during workouts. Hence, tracking
+  heart-rate is a better idea for faster fat-burning.  
+  
+## Customer participation  
+
+  1. Fitness-class on Sundays may ensure consumers remain active throughout the week.
+  2. Rewards-program to incentivize consistent users may encourage regular use of Leaf Chakra.
+  3. Periodic steps-challenge may motivate users to walk more daily.
+  4. Consumers may be asked to regularly log their age, weight & height for recommending them personalized   tips to help them achieve fitness goals.
+  
+## Market Segmentation  
+
+  There are two segment of consumers based on how aggresively they burn calories per step. Marketing strategies may be tailored to the consumers of respective segments.
+  
+## Product Improvement  
+
+  1. Adding feature of periodic reminder by the tracker to take break in case of sensing extended 
+  sitting may help improve metabolic health of consumer by cutting down prolonged sedentary time.
+  2. Adding feature of sending alerts to user's phone in the event of sensing no-use, in order to      remind her to wear it. This may attract forgetful consumers to buy.
+
+
+# Limitations
+The insights were drawn using usage-data of only 41 individuals. Hence, the conclusions drawn would lack statistical significance. 
+A comprehensive survey of larger number of users will help to perform more firm analysis.
+
+# Appendix
+
+## Case-study: How Can a Wellness Technology Company Play It Smart?
+
+### Introduction  
+
+Welcome to the Bellabeat data analysis case study! In this case study, you will perform many real-world tasks of a junior data
+analyst. You will imagine you are working for Bellabeat, a high-tech manufacturer of health-focused products for women, and
+meet different characters and team members. In order to answer the key business questions, you will follow the steps of the
+data analysis process: ask, prepare, process, analyze, share, and act. Along the way, the Case Study Roadmap tables —
+including guiding questions and key tasks — will help you stay on the right path.
+
+### Scenario
+
+You are a junior data analyst working on the marketing analyst team at Bellabeat, a high-tech manufacturer of health-focused
+products for women. Bellabeat is a successful small company, but they have the potential to become a larger player in theglobal smart device market. Urška Sršen, cofounder and Chief Creative Officer of Bellabeat, believes that analyzing smart
+device fitness data could help unlock new growth opportunities for the company. You have been asked to focus on one of
+Bellabeat’s products and analyze smart device data to gain insight into how consumers are using their smart devices. The
+insights you discover will then help guide marketing strategy for the company. You will present your analysis to the Bellabeat
+executive team along with your high-level recommendations for Bellabeat’s marketing strategy.
+
+### Task  
+
+Sršen asks you to analyze smart device usage data in order to gain insight into how consumers use non-Bellabeat smart
+devices. She then wants you to select one Bellabeat product to apply these insights to in your presentation. 
+
+Sršen encourages you to use public data that explores smart device users’ daily habits. She points you to a specific data set:  
+
+FitBit Fitness Tracker Data (CC0: Public Domain, dataset made available through Mobius): This Kaggle data set contains personal fitness tracker from thirty fitbit users. Thirty eligible Fitbit users consented to the submission of
+personal tracker data, including minute-level output for physical activity, heart rate, and sleep monitoring. It includes
+information about daily activity, steps, and heart rate that can be used to explore users’ habits.
+
+
+Sršen tells you that this data set might have some limitations, and encourages you to consider adding another data to help
+address those limitations as you begin to work more with this data.
+
+
+
+## Additional plots generated
+
+```{r, message = FALSE, warning = FALSE}
+num_of_consumers <- c(41,28,17,17)
+ data_frame <- c("activity", "sleep", "heartrate", "body")
+df <- data.frame(num_of_consumers,data_frame)
+ggplot(df, aes(x = data_frame, y = num_of_consumers, fill = data_frame)) + geom_col() + 
+labs(x = 'Data', y = 'Number of participants', title = 'Number of consumers under analysis')+
+  geom_text(aes(label=num_of_consumers, vjust = -.25), size = 3)+
+theme(legend.position = "none")
+
+ggsave("num_of_consumers.png")
+```
+
