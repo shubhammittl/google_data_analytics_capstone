@@ -38,14 +38,26 @@ information about daily activity, steps, and heart rate that can be used to expl
 Sršen tells you that this data set might have some limitations, and encourages you to consider adding another data to help
 address those limitations as you begin to work more with this data.
 
+### Completion Deadline
+1 week
 
-## ASK
+## My Approach
+In order to answer the key business questions, I followed the steps of the data analysis process: ask, prepare, process, analyze, share, and act.
+
+**To stay on track throughout the case-study, I created a Scope-of-Work (SOW) document, outlining the milestones to be achieved for completion of project.**
+
+### ASK
 ● What is the problem you are trying to solve?
+
 I am finding the key trends on how the consumers of non-Bellabeat products use their health-focused smart-devices.
+
 ● How can your insights drive business decisions?
-The usage trends will help change the marketing strategy of our smart-devices to improve sales.
+
+The usage trends will help change the marketing strategy of Bellabeat smart-devices.
 
 Key Stakeholders: 
 Urška Sršen: Bellabeat’s cofounder and Chief Creative Officer
 Sando Mur: Mathematician and Bellabeat’s cofounder
+
+## 
 
