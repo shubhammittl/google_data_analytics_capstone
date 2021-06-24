@@ -862,7 +862,7 @@ activity %>%
       x = 'Step count', y = 'Distance traversed')+
   theme(legend.position = "none")
 
-ggsave('distance_vs_steps.png')
+ggsave("saved_plots/distance_vs_steps.png")
 ```
 
 **Finding: The number of steps and distance travelled are exactly linear.**
@@ -882,7 +882,7 @@ activity %>%
        y = 'Calories burnt')+
   theme(legend.position = "none")
 
-ggsave('calories_vs_activity.png')
+ggsave("saved_plots/calories_vs_activity.png")
 ```
 
 **Finding:**  
@@ -1824,24 +1824,40 @@ On an average, a consumer records daily body-data less than one-tenth times as c
 The individual attributes: weight and height are important to determine the Body-Mass Index, an important factor for determining calories and steps goals.  Knowledge of body-parameters can be helpful for personalized recommendations to consumers.
 
 
-# Key Insights
+# Summary of Findings
 1. Less than 50% of consumers tracked their heart-rate and body-parameters(height, weight, fat, etc), in addition to activity and sleep.
 2. Consumers missed upto 35% of times tracking their daily calories & upto 75% of times their daily step count.
 3. There are 2 segments of users: 'average burners' and 'intense burners'. Intense-burners,comprising of overweight and obese consumers, burnt higher number of calories for the same number of steps as compared to average burners who are healthy consumers.
 4. Duration of REM sleep was not tracked for most of the users.  
 5. On an average, a consumer  
- * covered a distance of 5 kilometers by traveling 6925 steps and burnt around 2.1 kilo-calories per day. This is too less than recommended by CDC for good health.  
- * used tracker for 20 hours a day.  
- * spent 16.7 hours in sedentary, 3 hours in light, 15 minutes in moderate, and 19 minutes in intense activity.  
- * spent time seated the most on Mondays, while least on Saturdays.  
- * was the most active on Saturday and the least on Sundays.  
- * tracked sleep one-third times he/she tracked daily activity.  
- * slept for 6 hours daily, which is less than recommended sleep of more than 7 hours.  
- * slept longest (more than 7 hours) on Sunday.  
- * wasted 8% of their total bed-time being awake.  
- * tracked heart-rate one-fourth of the days he/she tracked activity.  
- * tracked only 16 hours of heart-rate in a day.   
- * recorded daily body-data less than one-tenth times as compared to recording the daily activity.  
+  * covered a distance of 5 kilometers by traveling 6925 steps and burnt around 2.1 kilo-calories per day. This is too less than recommended by CDC for good health.  
+  * used tracker for 20 hours a day.  
+  * spent 16.7 hours in sedentary, 3 hours in light, 15 minutes in moderate, and 19 minutes in intense activity.  
+  * spent time seated the most on Mondays, while least on Saturdays.  
+  * was the most active on Saturday and the least on Sundays.  
+  * tracked sleep one-third times he/she tracked daily activity.  
+  * slept for 6 hours daily, which is less than recommended sleep of more than 7 hours.  
+  * slept longest (more than 7 hours) on Sunday.  
+  * wasted 8% of their total bed-time being awake.  
+  * tracked heart-rate one-fourth of the days he/she tracked activity.  
+  * tracked only 16 hours of heart-rate in a day.   
+  * recorded daily body-data less than one-tenth times as compared to recording the daily activity.  
+
+
+# Key Insights
+
+1. Some non-Bellabeat trackers have no functionality of tracking sleep, heart-rate and body-parameters.  
+2. Even if the trackers have functions to track sleep, heart-rate & body-parameters,
+consumers don't use them most of the days.  
+2. Not all consumers are consistent in tracking their activity daily.  
+3. Overweight and obese consumers burn more calories for same number of steps as compared to 
+healthy consumers.  
+4. A typical consumer does not walk for a distance adequate enough for good health.  
+5. Fitness trackers are not used for the entire day.  
+6. Consumers spend a major part of their day while sitting, which can be harmful if not minimized with timely breaks of activity.  
+7. Consumers have inadequate sleep mostly on weekdays.   
+8. Consumers, on Sundays, sleep longer but, are least active.  
+
 
 # Recommendations
 
@@ -1859,12 +1875,12 @@ The individual attributes: weight and height are important to determine the Body
   5. Certain heart-rate zones are more effective at burning fat during workouts. Hence, tracking
   heart-rate is a better idea for faster fat-burning.  
   
-## Customer participation  
+## Consumer Engagement  
 
   1. Fitness-class on Sundays may ensure consumers remain active throughout the week.
   2. Rewards-program to incentivize consistent users may encourage regular use of Leaf Chakra.
   3. Periodic steps-challenge may motivate users to walk more daily.
-  4. Consumers may be asked to regularly log their age, weight & height for recommending them personalized   tips to help them achieve fitness goals.
+  4. Consumers may be asked to regularly log their age, weight & height for recommending them personalized tips to help them achieve fitness goals.
   
 ## Market Segmentation  
 
@@ -1872,13 +1888,13 @@ The individual attributes: weight and height are important to determine the Body
   
 ## Product Improvement  
 
-  1. Adding feature of periodic reminder by the tracker to take break in case of sensing extended 
+  1. Adding feature of periodic reminder to take break in case of sensing extended 
   sitting may help improve metabolic health of consumer by cutting down prolonged sedentary time.
-  2. Adding feature of sending alerts to user's phone in the event of sensing no-use, in order to      remind her to wear it. This may attract forgetful consumers to buy.
+  2. Adding feature of reminding consumer to wear the tracker in case of no-use may attract consumers who often forget to put on the gadget.
 
 
 # Limitations
-The insights were drawn using usage-data of only 41 individuals. Hence, the conclusions drawn would lack statistical significance. 
+The insights were built upon analysis of usage-data of only 41 individuals, which is too small sample size for any statistical significance. 
 A comprehensive survey of larger number of users will help to perform more firm analysis.
 
 # Appendix
