@@ -4,6 +4,8 @@ I completed this project as part of Google Data Analytics Professional Certifica
 
 This project is a case study titled, "How Can a Wellness Technology Company Play It Smart?", about analyzing usage-data of fitness-trackers' consumers.
 
+[Click here to view the deliverable (report) of the project](https://www.kaggle.com/shubhammittl/google-data-analytics-capstone-project-report)
+
 ## Case-study: How Can a Wellness Technology Company Play It Smart?
 
 ### Introduction  
