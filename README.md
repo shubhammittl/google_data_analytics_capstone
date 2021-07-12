@@ -78,3 +78,33 @@ The goal of this project is to improve marketing strategy of Bellabeat’s welln
 Urška Sršen: Bellabeat’s cofounder and Chief Creative Officer
 
 Sando Mur: Mathematician and Bellabeat’s cofounder
+
+### Prepare Phase
+#### Guiding questions
+● Where is your data stored?
+
+The data is stored online as Kaggle datasets.
+
+● How is the data organized? Is it in long or wide format?
+
+The data is organized as a collection of several CSV (comma separated values) files. It has both long and wide-format spreadsheets.
+
+● Are there issues with bias or credibility in this data? Does your data ROCCC?
+
+None of the datasets collected had any bias or credibility issues. The ROCCC check has been documented in the report.
+
+● How are you addressing licensing, privacy, security, and accessibility?
+
+License: Public domain dataset CC0  
+Privacy: The individual identification of persons involved is missing in the data  
+Security: The data is open-source to be downloaded by Kaggle users.  
+Accessibility: I can lock the spreadsheets to prevent edit.   
+
+
+● How did you verify the data’s integrity?
+
+
+● How does it help you answer your question?
+
+
+● Are there any problems with the data?
