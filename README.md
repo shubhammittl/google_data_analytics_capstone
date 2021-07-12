@@ -55,3 +55,26 @@ In order to answer the key business questions, I followed the steps of the data 
 
 ![](https://github.com/shubhammittl/google_data_analytics_capstone/blob/master/sow.png)
 
+### Ask Phase
+
+#### Guiding Questions
+
+1. **What is the problem you are trying to solve?**
+
+I am finding the key patterns on how the consumers of non-Bellabeat products use their health-focused smart-devices.
+
+2. **How can your insights drive business decisions?**
+
+They will help change the marketing strategy of our (Bellabeat's) smart-devices to improve sales.
+
+#### Key tasks
+
+1. **Identify the business task**
+
+The goal of this project is to improve marketing strategy of Bellabeat’s wellness tracker - Leaf Chakra. This project will analyze the usage data of non-Bellabeat trackers’ consumers to find key patterns and relationships. The key insights drawn from the analysis will be applied to Leaf Chakra for its promotion. The final deliverable will be high-level marketing recommendations based on those key insights.
+
+2. **Consider key stakeholders**
+
+Urška Sršen: Bellabeat’s cofounder and Chief Creative Officer
+
+Sando Mur: Mathematician and Bellabeat’s cofounder
